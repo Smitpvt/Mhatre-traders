@@ -5,6 +5,18 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { uploadToCloudinary } from '../utils/cloudinary.js';
 import { slugify } from './category.controller.js';
 
+const parseNumber = (val, fallback = 0) => {
+  if (val === undefined || val === null || val === '' || val === 'NaN') return fallback;
+  const num = Number(val);
+  return Number.isNaN(num) ? fallback : num;
+};
+
+const parseIntNumber = (val, fallback = 0) => {
+  if (val === undefined || val === null || val === '' || val === 'NaN') return fallback;
+  const num = parseInt(val, 10);
+  return Number.isNaN(num) ? fallback : num;
+};
+
 export const getProducts = asyncHandler(async (req, res, next) => {
   const { search, categoryId, status, page = 1, limit = 10 } = req.query;
   const pageNum = parseInt(page);
@@ -63,6 +75,7 @@ export const createProduct = asyncHandler(async (req, res, next) => {
   const {
     sku,
     name,
+    brand,
     description,
     unit,
     status,
@@ -128,7 +141,7 @@ export const createProduct = asyncHandler(async (req, res, next) => {
     }
   }
 
-  const initialStock = currentStock ? parseInt(currentStock) : 0;
+  const initialStock = parseIntNumber(currentStock, 0);
 
   // Execute nested transaction write
   const product = await prisma.$transaction(async (tx) => {
@@ -137,6 +150,7 @@ export const createProduct = asyncHandler(async (req, res, next) => {
         sku,
         slug,
         name,
+        brand: brand || null,
         description: description || '',
         unit,
         status: status || 'DRAFT',
@@ -154,17 +168,17 @@ export const createProduct = asyncHandler(async (req, res, next) => {
         },
         pricing: {
           create: {
-            purchasePrice: parseFloat(purchasePrice || 0),
-            sellingPrice: parseFloat(sellingPrice || 0),
-            defaultBillingRate: parseFloat(defaultBillingRate || 0),
-            gstRate: parseFloat(gstRate || 18.00),
+            purchasePrice: parseNumber(purchasePrice, 0),
+            sellingPrice: parseNumber(sellingPrice, 0),
+            defaultBillingRate: parseNumber(defaultBillingRate, 0),
+            gstRate: parseNumber(gstRate, 18.00),
             hsnCode: hsnCode || ''
           }
         },
         inventory: {
           create: {
             currentStock: initialStock,
-            reorderLevel: reorderLevel ? parseInt(reorderLevel) : 5,
+            reorderLevel: parseIntNumber(reorderLevel, 5),
             lastUpdatedBy: req.user.id
           }
         }
@@ -200,6 +214,7 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
   const {
     sku,
     name,
+    brand,
     description,
     unit,
     status,
@@ -250,6 +265,7 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
   }
 
   if (description !== undefined) updateData.description = description;
+  if (brand !== undefined) updateData.brand = brand || null;
   if (unit !== undefined) updateData.unit = unit;
   if (status !== undefined) updateData.status = status;
   if (featured !== undefined) updateData.featured = featured === 'true' || featured === true;
@@ -298,10 +314,10 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
 
     // 2. Update Pricing
     const pricingUpdate = {};
-    if (purchasePrice !== undefined) pricingUpdate.purchasePrice = parseFloat(purchasePrice);
-    if (sellingPrice !== undefined) pricingUpdate.sellingPrice = parseFloat(sellingPrice);
-    if (defaultBillingRate !== undefined) pricingUpdate.defaultBillingRate = parseFloat(defaultBillingRate);
-    if (gstRate !== undefined) pricingUpdate.gstRate = parseFloat(gstRate);
+    if (purchasePrice !== undefined) pricingUpdate.purchasePrice = parseNumber(purchasePrice, 0);
+    if (sellingPrice !== undefined) pricingUpdate.sellingPrice = parseNumber(sellingPrice, 0);
+    if (defaultBillingRate !== undefined) pricingUpdate.defaultBillingRate = parseNumber(defaultBillingRate, 0);
+    if (gstRate !== undefined) pricingUpdate.gstRate = parseNumber(gstRate, 18.00);
     if (hsnCode !== undefined) pricingUpdate.hsnCode = hsnCode;
 
     const updatedPricing = await tx.productPricing.update({
@@ -311,7 +327,7 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
 
     // 3. Update Inventory parameters
     const inventoryUpdate = { lastUpdatedBy: req.user.id };
-    if (reorderLevel !== undefined) inventoryUpdate.reorderLevel = parseInt(reorderLevel);
+    if (reorderLevel !== undefined) inventoryUpdate.reorderLevel = parseIntNumber(reorderLevel, 5);
 
     const updatedInventory = await tx.inventory.update({
       where: { productId: id },

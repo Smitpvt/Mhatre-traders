@@ -37,7 +37,7 @@ export default function ProductDetails() {
           name: p.name,
           category: p.category?.slug || "general",
           categoryTitle: p.category?.title || "General Division",
-          brand: "Mhatre Traders",
+          brand: p.brand || "Mhatre Traders",
           description: p.description || "",
           gallery: p.images && p.images.length > 0 
             ? p.images.map(img => img.url) 

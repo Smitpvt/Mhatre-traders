@@ -127,6 +127,7 @@ model Product {
   sku            String          @unique
   slug           String          @unique
   name           String
+  brand          String?
   description    String
   unit           ProductUnit
   status         ProductStatus   @default(DRAFT)

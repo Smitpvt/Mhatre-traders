@@ -6,9 +6,15 @@ export const request = async (endpoint, options = {}) => {
   const token = localStorage.getItem('token');
   
   const headers = {
-    'Content-Type': 'application/json',
     ...options.headers
   };
+
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  } else {
+    // Strip manual multipart Content-Type headers so the browser can assign the correct boundary
+    delete headers['Content-Type'];
+  }
   
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
@@ -60,8 +66,16 @@ export const request = async (endpoint, options = {}) => {
 
 export const api = {
   get: (endpoint, options) => request(endpoint, { ...options, method: 'GET' }),
-  post: (endpoint, body, options) => request(endpoint, { ...options, method: 'POST', body: JSON.stringify(body) }),
-  put: (endpoint, body, options) => request(endpoint, { ...options, method: 'PUT', body: JSON.stringify(body) }),
+  post: (endpoint, body, options) => request(endpoint, { 
+    ...options, 
+    method: 'POST', 
+    body: body instanceof FormData ? body : JSON.stringify(body) 
+  }),
+  put: (endpoint, body, options) => request(endpoint, { 
+    ...options, 
+    method: 'PUT', 
+    body: body instanceof FormData ? body : JSON.stringify(body) 
+  }),
   delete: (endpoint, options) => request(endpoint, { ...options, method: 'DELETE' })
 };
 

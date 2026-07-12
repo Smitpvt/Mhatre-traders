@@ -87,6 +87,7 @@ export const Products = () => {
     if (mode === 'edit' && product) {
       setValue('sku', product.sku);
       setValue('name', product.name);
+      setValue('brand', product.brand || '');
       setValue('description', product.description);
       setValue('unit', product.unit);
       setValue('status', product.status);
@@ -123,6 +124,7 @@ export const Products = () => {
       reset({
         sku: '',
         name: '',
+        brand: '',
         description: '',
         unit: 'BAG',
         status: 'DRAFT',
@@ -174,6 +176,7 @@ export const Products = () => {
     const formData = new FormData();
     formData.append('sku', data.sku);
     formData.append('name', data.name);
+    formData.append('brand', data.brand || '');
     formData.append('description', data.description || '');
     formData.append('unit', data.unit);
     formData.append('status', data.status);
@@ -451,13 +454,13 @@ export const Products = () => {
               <div className="space-y-4">
                 <h3 className="text-xs font-bold uppercase tracking-widest text-[#B56A45] border-b border-[#ECE7DF] pb-1">1. Catalog Metadata</h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   {/* SKU */}
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Unique SKU Code</label>
                     <input
                       type="text"
-                      placeholder="e.g. CEMENT-UT-53G"
+                      placeholder="e.g. CEMENT-UT"
                       {...register('sku', { required: 'SKU is required' })}
                       className="w-full px-3 py-2 bg-[#FCFBF8] border border-[#ECE7DF] rounded-lg text-sm focus:outline-hidden focus:border-[#B56A45]"
                     />
@@ -469,11 +472,22 @@ export const Products = () => {
                     <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Product Name</label>
                     <input
                       type="text"
-                      placeholder="e.g. Ultratech Cement (53 Grade)"
+                      placeholder="e.g. Ultratech Cement"
                       {...register('name', { required: 'Product name is required' })}
                       className="w-full px-3 py-2 bg-[#FCFBF8] border border-[#ECE7DF] rounded-lg text-sm focus:outline-hidden focus:border-[#B56A45]"
                     />
                     {errors.name && <span className="text-xs text-red-500">{errors.name.message}</span>}
+                  </div>
+
+                  {/* Brand */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Brand Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Ultratech, JSW (Optional)"
+                      {...register('brand')}
+                      className="w-full px-3 py-2 bg-[#FCFBF8] border border-[#ECE7DF] rounded-lg text-sm focus:outline-hidden focus:border-[#B56A45]"
+                    />
                   </div>
                 </div>
 
@@ -717,39 +731,6 @@ export const Products = () => {
                 </div>
               </div>
 
-              {/* SECTION F: SEO SETTINGS */}
-              <div className="space-y-4">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-[#B56A45] border-b border-[#ECE7DF] pb-1">6. SEO Settings</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">SEO Title</label>
-                    <input
-                      type="text"
-                      placeholder="SEO optimized title..."
-                      {...register('seoTitle')}
-                      className="w-full px-3 py-2 bg-[#FCFBF8] border border-[#ECE7DF] rounded-lg text-sm focus:outline-hidden focus:border-[#B56A45]"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">SEO Keywords</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. cement, construction..."
-                      {...register('seoKeywords')}
-                      className="w-full px-3 py-2 bg-[#FCFBF8] border border-[#ECE7DF] rounded-lg text-sm focus:outline-hidden focus:border-[#B56A45]"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">SEO Description</label>
-                    <input
-                      type="text"
-                      placeholder="SEO meta description..."
-                      {...register('seoDescription')}
-                      className="w-full px-3 py-2 bg-[#FCFBF8] border border-[#ECE7DF] rounded-lg text-sm focus:outline-hidden focus:border-[#B56A45]"
-                    />
-                  </div>
-                </div>
-              </div>
 
               {/* Form buttons */}
               <div className="pt-4 border-t border-[#ECE7DF] flex items-center justify-end gap-3 sticky bottom-0 bg-[#FFFFFF]">

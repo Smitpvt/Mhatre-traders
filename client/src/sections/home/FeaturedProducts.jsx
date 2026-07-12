@@ -24,7 +24,7 @@ export default function FeaturedProducts() {
             slug: p.slug,
             name: p.name,
             category: p.category?.slug || "general",
-            brand: "Mhatre Traders",
+            brand: p.brand || "Mhatre Traders",
             gallery: p.images && p.images.length > 0 
               ? p.images.map(img => img.url) 
               : ["https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=600&auto=format&fit=crop"],
