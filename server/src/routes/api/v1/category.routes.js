@@ -7,6 +7,11 @@ import {
 } from '../../../controllers/category.controller.js';
 import { protect } from '../../../middlewares/auth.middleware.js';
 import { upload } from '../../../middlewares/upload.middleware.js';
+import { validateRequest } from '../../../middlewares/validator.js';
+import { 
+  createCategoryValidator, 
+  updateCategoryValidator 
+} from '../../../validators/category.validator.js';
 
 const router = Router();
 
@@ -14,8 +19,8 @@ const router = Router();
 router.use(protect);
 
 router.get('/', getCategories);
-router.post('/', upload.single('image'), createCategory);
-router.put('/:id', upload.single('image'), updateCategory);
+router.post('/', upload.single('image'), createCategoryValidator, validateRequest, createCategory);
+router.put('/:id', upload.single('image'), updateCategoryValidator, validateRequest, updateCategory);
 router.delete('/:id', deleteCategory);
 
 export default router;

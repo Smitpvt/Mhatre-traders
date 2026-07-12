@@ -10,10 +10,26 @@ export const getDashboardStats = asyncHandler(async (req, res, next) => {
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
 
-  // Batch 1: Catalog sizes and physical inventory
-  const [totalCategories, totalProducts, allInventory] = await Promise.all([
+  // Run all 12 independent database queries parallelly in a single Promise.all block
+  const [
+    totalCategories,
+    totalProducts,
+    allInventory,
+    todaySalesData,
+    monthlySalesData,
+    outstandingData,
+    monthlyPurchasesData,
+    totalBills,
+    paidBillsCount,
+    recentBills,
+    recentActivity,
+    recentPurchases
+  ] = await Promise.all([
+    // Catalog size check
     prisma.category.count({ where: { deletedAt: null } }),
     prisma.product.count({ where: { deletedAt: null } }),
+    
+    // Core physical inventory pricing lookup
     prisma.$queryRaw`
       SELECT 
         i."currentStock",
@@ -23,9 +39,76 @@ export const getDashboardStats = asyncHandler(async (req, res, next) => {
       JOIN "Product" p ON i."productId" = p.id
       LEFT JOIN "ProductPricing" pp ON p.id = pp."productId"
       WHERE p."deletedAt" IS NULL
-    `
+    `,
+
+    // Daily Sales aggregate
+    prisma.bill.aggregate({
+      _sum: { grandTotal: true },
+      where: { deletedAt: null, createdAt: { gte: startOfToday } }
+    }),
+
+    // Monthly Sales aggregate
+    prisma.bill.aggregate({
+      _sum: { grandTotal: true },
+      where: { deletedAt: null, createdAt: { gte: startOfMonth } }
+    }),
+
+    // Outstanding Payments aggregate
+    prisma.bill.aggregate({
+      _sum: { grandTotal: true },
+      where: { deletedAt: null, paymentStatus: { in: ['PENDING', 'PARTIAL'] } }
+    }),
+
+    // Monthly Purchases aggregate
+    prisma.inventoryTransaction.aggregate({
+      _sum: { totalPrice: true },
+      where: { type: 'PURCHASE', transactionDate: { gte: startOfMonth } }
+    }),
+
+    // Total Invoices counter
+    prisma.bill.count({ where: { deletedAt: null } }),
+
+    // Total Paid Invoices counter
+    prisma.bill.count({ where: { deletedAt: null, paymentStatus: 'PAID' } }),
+
+    // Recent Invoice documents
+    prisma.bill.findMany({
+      where: { deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+      take: 5
+    }),
+
+    // Recent Inventory operations log
+    prisma.inventoryTransaction.findMany({
+      include: {
+        inventory: {
+          include: {
+            product: { select: { name: true, sku: true } }
+          }
+        },
+        user: { select: { name: true } }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 5
+    }),
+
+    // Recent Vendor Supplier purchases log
+    prisma.inventoryTransaction.findMany({
+      where: { type: 'PURCHASE' },
+      include: {
+        inventory: {
+          include: {
+            product: { select: { name: true, sku: true, unit: true } }
+          }
+        },
+        user: { select: { name: true } }
+      },
+      orderBy: { transactionDate: 'desc' },
+      take: 5
+    })
   ]);
 
+  // Process core physical inventory parameters in-memory
   let totalInventoryValue = 0;
   let lowStockCount = 0;
   let outOfStockCount = 0;
@@ -46,65 +129,10 @@ export const getDashboardStats = asyncHandler(async (req, res, next) => {
     }
   });
 
-  // Batch 2: Sales ledger filters aggregates
-  const [todaySalesData, monthlySalesData, outstandingData, monthlyPurchasesData] = await Promise.all([
-    prisma.bill.aggregate({
-      _sum: { grandTotal: true },
-      where: { deletedAt: null, createdAt: { gte: startOfToday } }
-    }),
-    prisma.bill.aggregate({
-      _sum: { grandTotal: true },
-      where: { deletedAt: null, createdAt: { gte: startOfMonth } }
-    }),
-    prisma.bill.aggregate({
-      _sum: { grandTotal: true },
-      where: { deletedAt: null, paymentStatus: { in: ['PENDING', 'PARTIAL'] } }
-    }),
-    prisma.inventoryTransaction.aggregate({
-      _sum: { totalPrice: true },
-      where: { type: 'PURCHASE', transactionDate: { gte: startOfMonth } }
-    })
-  ]);
   const todaySales = parseFloat(todaySalesData._sum.grandTotal || 0);
   const monthlySales = parseFloat(monthlySalesData._sum.grandTotal || 0);
   const outstandingPayments = parseFloat(outstandingData._sum.grandTotal || 0);
   const monthlyPurchases = parseFloat(monthlyPurchasesData._sum.totalPrice || 0);
-
-  // Batch 3: Counts and recent documents lists
-  const [totalBills, paidBillsCount, recentBills, recentActivity, recentPurchases] = await Promise.all([
-    prisma.bill.count({ where: { deletedAt: null } }),
-    prisma.bill.count({ where: { deletedAt: null, paymentStatus: 'PAID' } }),
-    prisma.bill.findMany({
-      where: { deletedAt: null },
-      orderBy: { createdAt: 'desc' },
-      take: 5
-    }),
-    prisma.inventoryTransaction.findMany({
-      include: {
-        inventory: {
-          include: {
-            product: { select: { name: true, sku: true } }
-          }
-        },
-        user: { select: { name: true } }
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 5
-    }),
-    prisma.inventoryTransaction.findMany({
-      where: { type: 'PURCHASE' },
-      include: {
-        inventory: {
-          include: {
-            product: { select: { name: true, sku: true, unit: true } }
-          }
-        },
-        user: { select: { name: true } }
-      },
-      orderBy: { transactionDate: 'desc' },
-      take: 5
-    })
-  ]);
 
   res.status(200).json(new ApiResponse('Dashboard statistics retrieved successfully', {
     totalCategories,

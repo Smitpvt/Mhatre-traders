@@ -5,6 +5,11 @@ import {
   updateCompanyDetails 
 } from '../../../controllers/setting.controller.js';
 import { protect } from '../../../middlewares/auth.middleware.js';
+import { validateRequest } from '../../../middlewares/validator.js';
+import { 
+  updateSettingValidator, 
+  updateCompanyDetailsValidator 
+} from '../../../validators/setting.validator.js';
 
 const router = Router();
 
@@ -12,7 +17,7 @@ const router = Router();
 router.use(protect);
 
 router.get('/', getSettings);
-router.put('/', updateSetting);
-router.put('/company', updateCompanyDetails);
+router.put('/', updateSettingValidator, validateRequest, updateSetting);
+router.put('/company', updateCompanyDetailsValidator, validateRequest, updateCompanyDetails);
 
 export default router;

@@ -7,32 +7,65 @@ import { Autoplay } from "swiper/modules";
 import steelImg from "../../categories/steel.jpg";
 import cementImg from "../../categories/cement.jpg";
 import pipesImg from "../../categories/pipes.jpg";
-import roofImg from "../../categories/roof.jpg";
+import roofImg from "../../categories/roof1.jpg";
 
 import "swiper/css";
 
 export default function Categories() {
   const [categoriesList, setCategoriesList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const loadCategories = async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const res = await fetch(`${BASE_URL}/public/categories`).then(r => r.json());
+      if (res.success && res.data) {
+        setCategoriesList(res.data.categories);
+      } else {
+        setError(true);
+      }
+    } catch (err) {
+      console.error("Failed to load homepage categories", err);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const res = await fetch(`${BASE_URL}/public/categories`).then(r => r.json());
-        if (res.success && res.data) {
-          setCategoriesList(res.data.categories);
-        }
-      } catch (err) {
-        console.error("Failed to load homepage categories", err);
-      } finally {
-        setLoading(false);
-      }
-    };
     loadCategories();
   }, []);
 
-  if (loading || categoriesList.length === 0) {
-    return null; // Don't block rendering, fallback gracefully
+  if (loading) {
+    return (
+      <section className="py-24 bg-brand-linen">
+        <div className="max-w-7xl mx-auto px-8 lg:px-9 flex justify-center py-10">
+          <div className="w-full h-48 bg-brand-border/20 rounded-3xl animate-pulse" />
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="py-24 bg-brand-linen">
+        <div className="max-w-7xl mx-auto px-8 lg:px-9 text-center py-12 border border-brand-border/40 rounded-3xl bg-[#FCFBF8] space-y-4">
+          <p className="text-brand-muted text-sm font-light">Failed to load material divisions.</p>
+          <button
+            onClick={loadCategories}
+            className="bg-brand-terracotta hover:bg-brand-terracotta-dark text-white text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-full cursor-pointer transition-colors"
+          >
+            Retry Loading
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  if (categoriesList.length === 0) {
+    return null; // Don't block rendering if empty
   }
 
   // Bind categories to matching index slots safely

@@ -15,73 +15,75 @@ export default function ProductDetails() {
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const fetchProductDetails = async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      // 1. Fetch main product details
+      const prodRes = await fetch(`${BASE_URL}/public/products/${slug}`).then(r => r.json());
+      if (!prodRes.success || !prodRes.data?.product) {
+        navigate("/404", { replace: true });
+        return;
+      }
+
+      const p = prodRes.data.product;
+      
+      // Map database item to format expected by JSX elements
+      const mappedProduct = {
+        id: p.id,
+        slug: p.slug,
+        name: p.name,
+        category: p.category?.slug || "general",
+        categoryTitle: p.category?.title || "General Division",
+        brand: p.brand || "Mhatre Traders",
+        description: p.description || "",
+        gallery: p.images && p.images.length > 0 
+          ? p.images.map(img => img.url) 
+          : ["https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=600&auto=format&fit=crop"],
+        specifications: p.specifications || {},
+        applications: p.applications || [],
+        unit: p.unit,
+        availability: p.inStock
+      };
+
+      setProduct(mappedProduct);
+      setActiveImageIdx(0);
+
+      // 2. Fetch all products to recommend related ones (same category)
+      const allProdsRes = await fetch(`${BASE_URL}/public/products`).then(r => r.json());
+      if (allProdsRes.success && allProdsRes.data?.products) {
+        const categorySlug = p.category?.slug;
+        const mappedRelated = allProdsRes.data.products
+          .filter(rp => rp.category?.slug === categorySlug && rp.id !== p.id)
+          .slice(0, 3)
+          .map(rp => ({
+            id: rp.id,
+            slug: rp.slug,
+            name: rp.name,
+            category: rp.category?.slug || "general",
+            brand: rp.brand || "Mhatre Traders",
+            gallery: rp.images && rp.images.length > 0 
+              ? rp.images.map(img => img.url) 
+              : ["https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=600&auto=format&fit=crop"],
+            unit: rp.unit,
+            availability: rp.inStock,
+            description: rp.description || ""
+          }));
+
+        setRelatedProducts(mappedRelated);
+      }
+
+    } catch (err) {
+      console.error("Failed to load product details", err);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchProductDetails = async () => {
-      setLoading(true);
-      try {
-        // 1. Fetch main product details
-        const prodRes = await fetch(`${BASE_URL}/public/products/${slug}`).then(r => r.json());
-        if (!prodRes.success || !prodRes.data?.product) {
-          navigate("/404", { replace: true });
-          return;
-        }
-
-        const p = prodRes.data.product;
-        
-        // Map database item to format expected by JSX elements
-        const mappedProduct = {
-          id: p.id,
-          slug: p.slug,
-          name: p.name,
-          category: p.category?.slug || "general",
-          categoryTitle: p.category?.title || "General Division",
-          brand: p.brand || "Mhatre Traders",
-          description: p.description || "",
-          gallery: p.images && p.images.length > 0 
-            ? p.images.map(img => img.url) 
-            : ["https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=600&auto=format&fit=crop"],
-          specifications: p.specifications || {},
-          applications: p.applications || [],
-          unit: p.unit,
-          availability: p.inStock
-        };
-
-        setProduct(mappedProduct);
-        setActiveImageIdx(0);
-
-        // 2. Fetch all products to recommend related ones (same category)
-        const allProdsRes = await fetch(`${BASE_URL}/public/products`).then(r => r.json());
-        if (allProdsRes.success && allProdsRes.data?.products) {
-          const categorySlug = p.category?.slug;
-          const mappedRelated = allProdsRes.data.products
-            .filter(rp => rp.category?.slug === categorySlug && rp.id !== p.id)
-            .slice(0, 3)
-            .map(rp => ({
-              id: rp.id,
-              slug: rp.slug,
-              name: rp.name,
-              category: rp.category?.slug || "general",
-              brand: "Mhatre Traders",
-              gallery: rp.images && rp.images.length > 0 
-                ? rp.images.map(img => img.url) 
-                : ["https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=600&auto=format&fit=crop"],
-              unit: rp.unit,
-              availability: rp.inStock,
-              description: rp.description || ""
-            }));
-
-          setRelatedProducts(mappedRelated);
-        }
-
-      } catch (err) {
-        console.error("Failed to load product details view", err);
-        navigate("/404", { replace: true });
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProductDetails();
   }, [slug, navigate]);
 
@@ -94,6 +96,22 @@ export default function ProductDetails() {
     return (
       <div className="pt-36 pb-24 bg-brand-ivory min-h-screen text-center text-zinc-400">
         <p className="animate-pulse">Loading SKU details...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="pt-36 pb-24 bg-brand-ivory min-h-screen flex items-center justify-center">
+        <div className="text-center py-12 px-8 border border-brand-border rounded-3xl bg-white max-w-md space-y-4 shadow-sm">
+          <p className="text-brand-muted text-lg font-light">Failed to load product details.</p>
+          <button
+            onClick={fetchProductDetails}
+            className="bg-brand-terracotta hover:bg-brand-terracotta-dark text-white text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-full cursor-pointer transition-colors"
+          >
+            Retry Loading
+          </button>
+        </div>
       </div>
     );
   }

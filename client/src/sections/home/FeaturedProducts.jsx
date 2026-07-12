@@ -12,41 +12,74 @@ import "swiper/css";
 export default function FeaturedProducts() {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const loadFeatured = async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const res = await fetch(`${BASE_URL}/public/products`).then(r => r.json());
+      if (res.success && res.data) {
+        // Map database structures to ProductCard expectations
+        const mapped = res.data.products.map(p => ({
+          id: p.id,
+          slug: p.slug,
+          name: p.name,
+          category: p.category?.slug || "general",
+          brand: p.brand || "Mhatre Traders",
+          gallery: p.images && p.images.length > 0 
+            ? p.images.map(img => img.url) 
+            : ["https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=600&auto=format&fit=crop"],
+          unit: p.unit,
+          availability: p.inStock,
+          description: p.description || "",
+          featured: p.featured
+        }));
+
+        // Remove the strict filter so the carousel doesn't disappear when there are no explicitly "featured" products
+        setFeaturedProducts(mapped.slice(0, 15));
+      } else {
+        setError(true);
+      }
+    } catch (err) {
+      console.error("Failed to load featured products", err);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadFeatured = async () => {
-      try {
-        const res = await fetch(`${BASE_URL}/public/products`).then(r => r.json());
-        if (res.success && res.data) {
-          // Map database structures to ProductCard expectations
-          const mapped = res.data.products.map(p => ({
-            id: p.id,
-            slug: p.slug,
-            name: p.name,
-            category: p.category?.slug || "general",
-            brand: p.brand || "Mhatre Traders",
-            gallery: p.images && p.images.length > 0 
-              ? p.images.map(img => img.url) 
-              : ["https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=600&auto=format&fit=crop"],
-            unit: p.unit,
-            availability: p.inStock,
-            description: p.description || "",
-            featured: p.featured
-          }));
-
-          // Remove the strict filter so the carousel doesn't disappear when there are no explicitly "featured" products
-          setFeaturedProducts(mapped.slice(0, 15));
-        }
-      } catch (err) {
-        console.error("Failed to load featured products", err);
-      } finally {
-        setLoading(false);
-      }
-    };
     loadFeatured();
   }, []);
 
-  if (loading || featuredProducts.length === 0) {
+  if (loading) {
+    return (
+      <section className="pt-14 pb-16 bg-white border-y border-brand-border/40">
+        <div className="max-w-7xl mx-auto px-8 lg:px-9 flex justify-center py-10">
+          <div className="w-full h-64 bg-brand-border/10 rounded-3xl animate-pulse" />
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="pt-14 pb-16 bg-white border-y border-brand-border/40">
+        <div className="max-w-7xl mx-auto px-8 lg:px-9 text-center py-12 border border-brand-border/40 rounded-3xl bg-[#FCFBF8] space-y-4">
+          <p className="text-brand-muted text-sm font-light">Failed to load featured products.</p>
+          <button
+            onClick={loadFeatured}
+            className="bg-brand-terracotta hover:bg-brand-terracotta-dark text-white text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-full cursor-pointer transition-colors"
+          >
+            Retry Loading
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  if (featuredProducts.length === 0) {
     return null; // Fallback gracefully if database has no products marked featured
   }
 

@@ -119,7 +119,18 @@ export const createBill = asyncHandler(async (req, res, next) => {
     const paddedNumber = String(nextNumber).padStart(5, '0');
     const invoiceNumber = `MT-${currentYear}-${paddedNumber}`;
 
-    // 2. Validate and map items
+    // 2. Validate and map items - Batch fetch all products at once to eliminate N+1 database lookups
+    const productIds = items.map(item => item.productId);
+    const dbProducts = await tx.product.findMany({
+      where: {
+        id: { in: productIds },
+        deletedAt: null
+      },
+      include: { pricing: true, inventory: true }
+    });
+
+    const productMap = new Map(dbProducts.map(p => [p.id, p]));
+
     const billItemsData = [];
     let calculatedSubtotal = 0;
     let calculatedGstAmount = 0;
@@ -127,12 +138,9 @@ export const createBill = asyncHandler(async (req, res, next) => {
     for (const item of items) {
       const { productId, quantity, unitPrice, discount: itemDiscount, gstRate } = item;
       
-      const product = await tx.product.findUnique({
-        where: { id: productId },
-        include: { pricing: true, inventory: true }
-      });
+      const product = productMap.get(productId);
 
-      if (!product || product.deletedAt) {
+      if (!product) {
         throw new ApiError(404, `Product SKU with ID "${productId}" not found`);
       }
 

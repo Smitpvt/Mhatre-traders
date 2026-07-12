@@ -12,52 +12,54 @@ export default function CategoryDetails() {
   const [productsList, setProductsList] = useState([]);
   const [otherCategories, setOtherCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const fetchCategoryDetails = async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      // Fetch current category with its products
+      const catDetailsRes = await fetch(`${BASE_URL}/public/categories/${slug}`).then(r => r.json());
+      if (!catDetailsRes.success || !catDetailsRes.data?.category) {
+        navigate("/404", { replace: true });
+        return;
+      }
+
+      const catData = catDetailsRes.data.category;
+      setCategory(catData);
+
+      // Map DB products inside the category to mock format expected by ProductCard
+      const mappedProds = (catData.products || []).map(p => ({
+        id: p.id,
+        slug: p.slug,
+        name: p.name,
+        category: catData.slug,
+        brand: p.brand || "Mhatre Traders",
+        gallery: p.images && p.images.length > 0 
+          ? p.images.map(img => img.url) 
+          : ["https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=600&auto=format&fit=crop"],
+        unit: p.unit,
+        availability: p.inStock,
+        description: p.description || ""
+      }));
+      setProductsList(mappedProds);
+
+      // Fetch other divisions
+      const allCatsRes = await fetch(`${BASE_URL}/public/categories`).then(r => r.json());
+      if (allCatsRes.success && allCatsRes.data?.categories) {
+        const filtered = allCatsRes.data.categories.filter(c => c.slug !== slug).slice(0, 3);
+        setOtherCategories(filtered);
+      }
+
+    } catch (err) {
+      console.error("Failed to load category details", err);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchCategoryDetails = async () => {
-      setLoading(true);
-      try {
-        // Fetch current category with its products
-        const catDetailsRes = await fetch(`${BASE_URL}/public/categories/${slug}`).then(r => r.json());
-        if (!catDetailsRes.success || !catDetailsRes.data?.category) {
-          navigate("/404", { replace: true });
-          return;
-        }
-
-        const catData = catDetailsRes.data.category;
-        setCategory(catData);
-
-        // Map DB products inside the category to mock format expected by ProductCard
-        const mappedProds = (catData.products || []).map(p => ({
-          id: p.id,
-          slug: p.slug,
-          name: p.name,
-          category: catData.slug,
-          brand: p.brand || "Mhatre Traders",
-          gallery: p.images && p.images.length > 0 
-            ? p.images.map(img => img.url) 
-            : ["https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=600&auto=format&fit=crop"],
-          unit: p.unit,
-          availability: p.inStock,
-          description: p.description || ""
-        }));
-        setProductsList(mappedProds);
-
-        // Fetch other divisions
-        const allCatsRes = await fetch(`${BASE_URL}/public/categories`).then(r => r.json());
-        if (allCatsRes.success && allCatsRes.data?.categories) {
-          const filtered = allCatsRes.data.categories.filter(c => c.slug !== slug).slice(0, 3);
-          setOtherCategories(filtered);
-        }
-
-      } catch (err) {
-        console.error("Failed to load category details", err);
-        navigate("/404", { replace: true });
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchCategoryDetails();
   }, [slug, navigate]);
 
@@ -65,6 +67,22 @@ export default function CategoryDetails() {
     return (
       <div className="pt-36 pb-24 bg-brand-ivory min-h-screen text-center text-zinc-400">
         <p className="animate-pulse">Loading Division details...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="pt-36 pb-24 bg-brand-ivory min-h-screen flex items-center justify-center">
+        <div className="text-center py-12 px-8 border border-brand-border rounded-3xl bg-white max-w-md space-y-4 shadow-sm">
+          <p className="text-brand-muted text-lg font-light">Failed to load division details.</p>
+          <button
+            onClick={fetchCategoryDetails}
+            className="bg-brand-terracotta hover:bg-brand-terracotta-dark text-white text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-full cursor-pointer transition-colors"
+          >
+            Retry Loading
+          </button>
+        </div>
       </div>
     );
   }

@@ -8,22 +8,31 @@ export default function Categories() {
   const [categoriesList, setCategoriesList] = useState([]);
   const [productsList, setProductsList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const loadCatalog = async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const [catRes, prodRes] = await Promise.all([
+        fetch(`${BASE_URL}/public/categories`).then(r => r.json()),
+        fetch(`${BASE_URL}/public/products`).then(r => r.json())
+      ]);
+      if (catRes.success && prodRes.success) {
+        setCategoriesList(catRes.data.categories);
+        setProductsList(prodRes.data.products);
+      } else {
+        setError(true);
+      }
+    } catch (err) {
+      console.error("Failed to load public catalog", err);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadCatalog = async () => {
-      try {
-        const [catRes, prodRes] = await Promise.all([
-          fetch(`${BASE_URL}/public/categories`).then(r => r.json()),
-          fetch(`${BASE_URL}/public/products`).then(r => r.json())
-        ]);
-        if (catRes.success) setCategoriesList(catRes.data.categories);
-        if (prodRes.success) setProductsList(prodRes.data.products);
-      } catch (err) {
-        console.error("Failed to load public catalog", err);
-      } finally {
-        setLoading(false);
-      }
-    };
     loadCatalog();
   }, []);
 
@@ -49,6 +58,16 @@ export default function Categories() {
             <div className="h-64 bg-brand-linen/40 rounded-3xl" />
             <div className="h-64 bg-brand-linen/40 rounded-3xl" />
             <div className="h-64 bg-brand-linen/40 rounded-3xl" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-20 border border-brand-border rounded-3xl bg-brand-linen/10 space-y-4">
+            <p className="text-brand-muted text-lg font-light">Failed to load material divisions.</p>
+            <button
+              onClick={loadCatalog}
+              className="bg-brand-terracotta hover:bg-brand-terracotta-dark text-white text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-full cursor-pointer transition-colors"
+            >
+              Retry Loading
+            </button>
           </div>
         ) : categoriesList.length === 0 ? (
           <div className="text-center text-brand-muted text-sm py-16">

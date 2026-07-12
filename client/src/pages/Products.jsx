@@ -14,6 +14,7 @@ export default function Products() {
   const [dbProducts, setDbProducts] = useState([]);
   const [dbCategories, setDbCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   // Sync state if URL parameters change
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
@@ -23,44 +24,45 @@ export default function Products() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
+  const fetchCatalog = async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const [prodRes, catRes] = await Promise.all([
+        fetch(`${BASE_URL}/public/products`).then(r => r.json()),
+        fetch(`${BASE_URL}/public/categories`).then(r => r.json())
+      ]);
+
+      if (prodRes.success && prodRes.data && catRes.success && catRes.data) {
+        // Map DB products to mock formats expected by ProductCard
+        const mapped = prodRes.data.products.map(p => ({
+          id: p.id,
+          slug: p.slug,
+          name: p.name,
+          category: p.category?.slug || "general",
+          brand: p.brand || "Mhatre Traders",
+          gallery: p.images && p.images.length > 0 
+            ? p.images.map(img => img.url) 
+            : ["https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=600&auto=format&fit=crop"],
+          unit: p.unit,
+          availability: p.inStock,
+          description: p.description || ""
+        }));
+        setDbProducts(mapped);
+        setDbCategories(catRes.data.categories);
+      } else {
+        setError(true);
+      }
+    } catch (err) {
+      console.error("Failed to load products page content", err);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch live catalog data from public endpoints
   useEffect(() => {
-    const fetchCatalog = async () => {
-      setLoading(true);
-      try {
-        const [prodRes, catRes] = await Promise.all([
-          fetch(`${BASE_URL}/public/products`).then(r => r.json()),
-          fetch(`${BASE_URL}/public/categories`).then(r => r.json())
-        ]);
-
-        if (prodRes.success && prodRes.data) {
-          // Map DB products to mock formats expected by ProductCard
-          const mapped = prodRes.data.products.map(p => ({
-            id: p.id,
-            slug: p.slug,
-            name: p.name,
-            category: p.category?.slug || "general",
-            brand: p.brand || "Mhatre Traders",
-            gallery: p.images && p.images.length > 0 
-              ? p.images.map(img => img.url) 
-              : ["https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=600&auto=format&fit=crop"],
-            unit: p.unit,
-            availability: p.inStock,
-            description: p.description || ""
-          }));
-          setDbProducts(mapped);
-        }
-
-        if (catRes.success && catRes.data) {
-          setDbCategories(catRes.data.categories);
-        }
-      } catch (err) {
-        console.error("Failed to load products page content", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchCatalog();
   }, []);
 
@@ -148,6 +150,16 @@ export default function Products() {
               <div className="h-64 bg-brand-linen/30 rounded-3xl" />
               <div className="h-64 bg-brand-linen/30 rounded-3xl" />
             </div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-20 border border-brand-border rounded-3xl bg-brand-linen/10 space-y-4">
+            <p className="text-brand-muted text-lg font-light">Failed to load product catalogue.</p>
+            <button
+              onClick={fetchCatalog}
+              className="bg-brand-terracotta hover:bg-brand-terracotta-dark text-white text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-full cursor-pointer transition-colors"
+            >
+              Retry Loading
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

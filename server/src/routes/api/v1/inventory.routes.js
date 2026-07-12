@@ -7,6 +7,12 @@ import {
   recordPurchase
 } from '../../../controllers/inventory.controller.js';
 import { protect } from '../../../middlewares/auth.middleware.js';
+import { validateRequest } from '../../../middlewares/validator.js';
+import { 
+  adjustStockValidator, 
+  updateInventoryValidator, 
+  recordPurchaseValidator 
+} from '../../../validators/inventory.validator.js';
 
 const router = Router();
 
@@ -14,9 +20,9 @@ const router = Router();
 router.use(protect);
 
 router.get('/', getInventory);
-router.post('/adjust', adjustStock);
-router.post('/purchase', recordPurchase);
-router.put('/:productId', updateInventory);
+router.post('/adjust', adjustStockValidator, validateRequest, adjustStock);
+router.post('/purchase', recordPurchaseValidator, validateRequest, recordPurchase);
+router.put('/:productId', updateInventoryValidator, validateRequest, updateInventory);
 router.get('/history', getInventoryHistory);
 
 export default router;

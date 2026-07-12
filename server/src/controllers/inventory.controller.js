@@ -9,53 +9,46 @@ export const getInventory = asyncHandler(async (req, res, next) => {
   const limitNum = parseInt(limit);
   const skip = (pageNum - 1) * limitNum;
 
-  // Build where clause based on search and stock type
-  const whereClause = {
-    product: {
-      deletedAt: null
-    }
+  // 1. Core product search & deletion filters
+  const productFilter = {
+    deletedAt: null,
+    OR: search ? [
+      { name: { contains: search, mode: 'insensitive' } },
+      { sku: { contains: search, mode: 'insensitive' } }
+    ] : undefined
   };
 
-  if (search) {
-    whereClause.product = {
-      deletedAt: null,
-      OR: [
-        { name: { contains: search, mode: 'insensitive' } },
-        { sku: { contains: search, mode: 'insensitive' } }
-      ]
-    };
-  }
-
-  if (filterType === 'LOW_STOCK') {
-    // currentStock <= reorderLevel && currentStock > 0
-    whereClause.currentStock = {
-      gt: 0
-    };
-    whereClause.AND = [
-      {
-        currentStock: {
-          lte: prisma.inventory.fields.reorderLevel
-        }
-      }
-    ];
-  } else if (filterType === 'OUT_OF_STOCK') {
-    whereClause.currentStock = 0;
-  }
-
-  // Note: Prisma 5 doesn't easily support raw field comparison without raw query or manual filters if fields differ
-  // Let's load the data, and if a filter is set, we do it in memory or query with prisma.
-  // Wait, let's fetch all records if they aren't huge, or construct a where clause.
-  // Since we want standard behavior, we can fetch all records matching deletedAt: null, and filter/paginate in memory or query safely.
-  // Actually, to make it fast and support pagination natively, we can fetch inventory with product information:
-  const allInventory = await prisma.inventory.findMany({
+  // 2. Fetch candidates using minimal select (extremely lightweight database load)
+  const candidates = await prisma.inventory.findMany({
     where: {
-      product: {
-        deletedAt: null,
-        OR: search ? [
-          { name: { contains: search, mode: 'insensitive' } },
-          { sku: { contains: search, mode: 'insensitive' } }
-        ] : undefined
-      }
+      product: productFilter
+    },
+    select: {
+      id: true,
+      currentStock: true,
+      reorderLevel: true
+    }
+  });
+
+  // 3. Filter candidate records in-memory for reorderLevel comparison
+  let filteredCandidates = candidates;
+  if (filterType === 'LOW_STOCK') {
+    filteredCandidates = candidates.filter(
+      item => item.currentStock <= item.reorderLevel && item.currentStock > 0
+    );
+  } else if (filterType === 'OUT_OF_STOCK') {
+    filteredCandidates = candidates.filter(
+      item => item.currentStock === 0
+    );
+  }
+
+  const matchedIds = filteredCandidates.map(c => c.id);
+  const total = matchedIds.length;
+
+  // 4. Fetch details only for the current paginated page using indexed IN query
+  const paginatedInventory = await prisma.inventory.findMany({
+    where: {
+      id: { in: matchedIds }
     },
     include: {
       product: {
@@ -64,19 +57,10 @@ export const getInventory = asyncHandler(async (req, res, next) => {
         }
       }
     },
-    orderBy: { currentStock: 'asc' }
+    orderBy: { currentStock: 'asc' },
+    skip,
+    take: limitNum
   });
-
-  // Filter in memory for precise reorderLevel logic
-  let filtered = allInventory;
-  if (filterType === 'LOW_STOCK') {
-    filtered = allInventory.filter(item => item.currentStock <= item.reorderLevel && item.currentStock > 0);
-  } else if (filterType === 'OUT_OF_STOCK') {
-    filtered = allInventory.filter(item => item.currentStock === 0);
-  }
-
-  const total = filtered.length;
-  const paginatedInventory = filtered.slice(skip, skip + limitNum);
 
   res.status(200).json(new ApiResponse('Inventory retrieved successfully', {
     inventory: paginatedInventory,

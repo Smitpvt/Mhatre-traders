@@ -1,17 +1,17 @@
-import steelImg from "../categories1/steel.jpg";
-import cementImg from "../categories1/cement.jpg";
-import roofImg from "../categories1/roof1.jpg";
-import doorsImg from "../categories1/doors&windows.jpg";
-import hardwareImg from "../categories1/hardware&fasterners.jpg";
-import electricImg from "../categories1/electricmaterials.jpg";
-import pipesImg from "../categories1/pipes.jpg";
-import sanitaryImg from "../categories1/sanitaryware&bathfittings.jpg";
-import paintsImg from "../categories1/paints&waterproofing.jpg";
-import tilesImg from "../categories1/tiles&flooring.jpg";
-import fencingImg from "../categories1/fencing&compoundsolutions.jpg";
-import toolsImg from "../categories1/tools&accesories.jpg";
-import decorativeImg from "../categories1/decorative&interiors.jpg";
-import blocksImg from "../categories1/aac&chirablocks.jpg";
+import steelImg from "../categories/steel.jpg";
+import cementImg from "../categories/cement.jpg";
+import roofImg from "../categories/roof1.jpg";
+import doorsImg from "../categories/doors&windows.jpg";
+import hardwareImg from "../categories/hardware&fasterners.jpg";
+import electricImg from "../categories/electricmaterials.jpg";
+import pipesImg from "../categories/pipes.jpg";
+import sanitaryImg from "../categories/sanitaryware&bathfittings.jpg";
+import paintsImg from "../categories/paints&waterproofing.jpg";
+import tilesImg from "../categories/tiles&flooring.jpg";
+import fencingImg from "../categories/fencing&compoundsolutions.jpg";
+import toolsImg from "../categories/tools&accesories.jpg";
+import decorativeImg from "../categories/decorative&interiors.jpg";
+import blocksImg from "../categories/aac&chirablocks.jpg";
 
 export const categories = [
   {
