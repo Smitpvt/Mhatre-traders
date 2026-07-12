@@ -6,6 +6,7 @@ import { FiArrowLeft, FiShare2, FiCheck, FiInfo } from "react-icons/fi";
 import { RiWhatsappLine } from "react-icons/ri";
 import toast from "react-hot-toast";
 import { WHATSAPP_NUMBER } from "../constants/contact";
+import SEO from "../components/seo/SEO";
 
 export default function ProductDetails() {
   const { slug } = useParams();
@@ -124,8 +125,64 @@ export default function ProductDetails() {
     `Hello Mhatre Traders, I am interested in placing an inquiry for:\n\n*Product:* ${name}\n*Brand:* ${brand}\n*Unit:* ${unit}\n*Availability:* ${availability ? "In Stock" : "Out of Stock"}\n\nPlease share the bulk delivery quotes to Alibaug.`
   );
 
+  const productSchema = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": name,
+      "image": gallery,
+      "description": description || `High-quality ${name} supplied by Mhatre Traders.`,
+      "brand": {
+        "@type": "Brand",
+        "name": brand
+      },
+      "offers": {
+        "@type": "AggregateOffer",
+        "priceCurrency": "INR",
+        "lowPrice": "0",
+        "offerCount": "1",
+        "priceRange": "$$",
+        "seller": {
+          "@type": "LocalBusiness",
+          "name": "Mhatre Traders"
+        }
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://mhatretraders.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Products Catalogue",
+          "item": "https://mhatretraders.com/products"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": name,
+          "item": `https://mhatretraders.com/products/${slug}`
+        }
+      ]
+    }
+  ];
+
   return (
     <div className="pt-32 pb-24 bg-brand-ivory min-h-screen font-sans">
+      <SEO 
+        title={name}
+        description={description ? description.slice(0, 160) : `High-quality ${name} from ${brand}. Order in bulk from Mhatre Traders Alibaug.`}
+        keywords={`${name}, ${brand}, ${category}, alibaug building materials`}
+        ogImage={gallery[0]}
+        schema={productSchema}
+      />
       <div className="max-w-7xl mx-auto px-6">
         
         {/* Breadcrumb Navigation */}

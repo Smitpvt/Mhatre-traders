@@ -4,6 +4,7 @@ import { BASE_URL } from "../config/api.js";
 import ProductCard from "../components/cards/ProductCard";
 import SectionHeader from "../components/ui/SectionHeader";
 import { FiSearch, FiSliders, FiX } from "react-icons/fi";
+import SEO from "../components/seo/SEO";
 
 const ITEMS_PER_PAGE = 9;
 
@@ -126,8 +127,33 @@ export default function Products() {
     setSearchParams({});
   };
 
+  const productsSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://mhatretraders.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Products Catalogue",
+        "item": "https://mhatretraders.com/products"
+      }
+    ]
+  };
+
   return (
     <div className="pt-36 pb-24 bg-brand-ivory min-h-screen relative">
+      <SEO 
+        title="Products Catalogue | Structural & Finishing Supply"
+        description="Browse Mhatre Traders' certified catalog of premium structural items, cements, CPVC pipes, sanitaryware fittings, and electrical wire loops."
+        keywords="alibaug construction catalogue, building products catalog, steel pipes cement supplies"
+        schema={productsSchema}
+      />
       {/* Editorial grid lines */}
       <div className="absolute inset-0 editorial-grid opacity-30 pointer-events-none" />
 
@@ -139,6 +165,7 @@ export default function Products() {
             subtitle="PRODUCTS CATALOGUE"
             title="Structural & Finishing Supply"
             description="Browse our certified catalog of high-strength structural items, electrical wiring loops, premium sanitary fittings, and tools."
+            as="h1"
           />
         </div>
 

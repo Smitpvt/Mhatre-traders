@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { BASE_URL } from "../config/api.js";
 import ProductCard from "../components/cards/ProductCard";
 import { FiArrowLeft, FiArrowRight } from "react-icons/fi";
+import SEO from "../components/seo/SEO";
 
 export default function CategoryDetails() {
   const { slug } = useParams();
@@ -89,8 +90,40 @@ export default function CategoryDetails() {
 
   if (!category) return null;
 
+  const detailsSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://mhatretraders.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Material Divisions",
+        "item": "https://mhatretraders.com/categories"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": category.title,
+        "item": `https://mhatretraders.com/categories/${category.slug}`
+      }
+    ]
+  };
+
   return (
     <div className="pt-20 bg-brand-ivory min-h-screen font-sans">
+      <SEO 
+        title={`${category.title} Division`}
+        description={category.description || `Explore our high-quality ${category.title} solutions and materials from leading brands at Mhatre Traders.`}
+        keywords={`${category.slug}, ${category.title} supplies alibaug, building materials`}
+        ogImage={category.imageUrl}
+        schema={detailsSchema}
+      />
       
       {/* Category Editorial Hero Banner */}
       <section className="relative h-[55vh] w-full overflow-hidden bg-brand-dark flex items-center">

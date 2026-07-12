@@ -1,10 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FiArrowRight, FiHome } from "react-icons/fi";
+import SEO from "../components/seo/SEO";
 
 export default function NotFound() {
   return (
     <div className="pt-40 pb-32 bg-brand-ivory min-h-screen relative font-sans flex items-center">
+      <SEO 
+        title="404 Page Not Found"
+        description="The coordinate or division directory you requested does not exist."
+        robots="noindex, nofollow"
+      />
       {/* Background Grid */}
       <div className="absolute inset-0 editorial-grid opacity-15 pointer-events-none" />
 

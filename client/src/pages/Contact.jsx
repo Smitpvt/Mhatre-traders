@@ -4,6 +4,7 @@ import { BASE_URL } from "../config/api.js";
 import { toast } from "react-hot-toast";
 import SectionHeader from "../components/ui/SectionHeader";
 import { FiMail, FiPhone, FiMapPin, FiClock, FiMessageSquare } from "react-icons/fi";
+import SEO from "../components/seo/SEO";
 import { RiWhatsappLine } from "react-icons/ri";
 import {
   WHATSAPP_NUMBER,
@@ -51,8 +52,33 @@ export default function Contact() {
     { id: '3', title: 'Pipes & Fittings' }
   ];
 
+  const contactSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://mhatretraders.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Contact Sales Desk",
+        "item": "https://mhatretraders.com/contact"
+      }
+    ]
+  };
+
   return (
     <div className="pt-36 pb-24 bg-brand-ivory min-h-screen relative">
+      <SEO 
+        title="Contact Sales Desk | Request Bulk Quotes"
+        description="Connect with the Mhatre Traders sales desk. Get direct delivery quotes to Alibaug coastal locations, submit supply sheets, or send WhatsApp inquiries."
+        keywords="contact mhatre traders, building materials alibaug address, construction delivery quotes"
+        schema={contactSchema}
+      />
       {/* Background Grid */}
       <div className="absolute inset-0 editorial-grid opacity-30 pointer-events-none" />
 
@@ -63,7 +89,8 @@ export default function Contact() {
           <SectionHeader
             subtitle="INQUIRY DESK"
             title="Connect With Sales"
-            description="Submit your structural blueprints, material schedules, or accessory needs. Our Chaul office manages bulk supply B2B contracts across Alibaug taluka."
+            description="Request a bulk delivery quote or submit a structural supply checklist. Our Alibaug office responds within 24 hours."
+            as="h1"
           />
         </div>
 

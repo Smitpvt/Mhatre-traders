@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { FiCheck, FiLayers, FiShield, FiTruck } from "react-icons/fi";
 import SectionHeader from "../components/ui/SectionHeader";
 import AnimatedCounter from "../components/ui/AnimatedCounter";
+import SEO from "../components/seo/SEO";
 
 export default function About() {
   const stats = [
@@ -37,8 +38,33 @@ export default function About() {
     { year: "2024", title: "Luxury Bath & Interiors", desc: "Introduced large-format vitrified floor tiles, designer panels, and premium brass mixer fittings." }
   ];
 
+  const aboutSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://mhatretraders.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "About Us",
+        "item": "https://mhatretraders.com/about"
+      }
+    ]
+  };
+
   return (
     <div className="pt-36 pb-24 bg-brand-ivory min-h-screen relative overflow-hidden">
+      <SEO 
+        title="About Us | Alibaug's Building Materials Heritage"
+        description="Serving Alibaug since 1996, Mhatre Traders supplies high-strength steel rebars, building cements, and sanitaryware from factory-certified partners."
+        keywords="mhatre traders history, construction dealer alibaug, building supply heritage chaul"
+        schema={aboutSchema}
+      />
       {/* Background Grid */}
       <div className="absolute inset-0 editorial-grid opacity-30 pointer-events-none" />
 
@@ -50,6 +76,7 @@ export default function About() {
             subtitle="OUR ORIGIN"
             title="Building Alibaug's Foundations"
             description="Since 1996, Mhatre Traders has supplied certified structural steels, cements, and interior finishes to the changing landscape of Alibaug taluka."
+            as="h1"
           />
         </div>
 

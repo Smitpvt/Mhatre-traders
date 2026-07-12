@@ -6,9 +6,13 @@ export default function SectionHeader({
   title,
   description,
   align = "left",
-  light = false
+  light = false,
+  as: HeadingTag = "h2"
 }) {
   const isCenter = align === "center";
+  
+  // Resolve motion heading element dynamically (e.g. motion.h1, motion.h2)
+  const MotionHeading = motion[HeadingTag] || motion.h2;
 
   return (
     <div className={`max-w-4xl mb-12 ${isCenter ? "mx-auto text-center" : "text-left"}`}>
@@ -24,7 +28,7 @@ export default function SectionHeader({
         </motion.span>
       )}
       
-      <motion.h2
+      <MotionHeading
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -34,7 +38,7 @@ export default function SectionHeader({
         }`}
       >
         {title}
-      </motion.h2>
+      </MotionHeading>
 
       {description && (
         <motion.p

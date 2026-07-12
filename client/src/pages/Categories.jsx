@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import SectionHeader from "../components/ui/SectionHeader";
 import { BASE_URL } from "../config/api.js";
 import { FiArrowRight } from "react-icons/fi";
+import SEO from "../components/seo/SEO";
 
 export default function Categories() {
   const [categoriesList, setCategoriesList] = useState([]);
@@ -36,8 +37,33 @@ export default function Categories() {
     loadCatalog();
   }, []);
 
+  const categoriesSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://mhatretraders.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Material Divisions",
+        "item": "https://mhatretraders.com/categories"
+      }
+    ]
+  };
+
   return (
     <div className="pt-36 pb-24 bg-brand-ivory min-h-screen relative">
+      <SEO 
+        title="Material Divisions | Construction Categories"
+        description="Explore our range of premium building materials, including cement, structural steel rebars, CPVC plumbing, electrical systems, and hardware accessories."
+        keywords="construction material categories, building supplies alibaug, cement steel categories"
+        schema={categoriesSchema}
+      />
       {/* Editorial grid lines */}
       <div className="absolute inset-0 editorial-grid opacity-30 pointer-events-none" />
 
@@ -49,6 +75,7 @@ export default function Categories() {
             subtitle="Our Categories"
             title="Construction Material Categories"
             description="Explore our complete range of premium construction materials, roofing, plumbing, electrical supplies, sanitaryware, hardware, and building products from trusted brands."
+            as="h1"
           />
         </div>
 
