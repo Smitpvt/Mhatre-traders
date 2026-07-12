@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { BASE_URL } from "../config/api.js";
 import { toast } from "react-hot-toast";
 import SectionHeader from "../components/ui/SectionHeader";
 import { FiMail, FiPhone, FiMapPin, FiClock, FiMessageSquare } from "react-icons/fi";
@@ -27,8 +28,7 @@ export default function Contact() {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
-        const res = await fetch(`${apiBase}/public/categories`).then(r => r.json());
+        const res = await fetch(`${BASE_URL}/public/categories`).then(r => r.json());
         if (res.success && res.data) {
           setCategoriesList(res.data.categories);
         }

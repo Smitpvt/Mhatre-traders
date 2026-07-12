@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { BASE_URL } from "../../config/api.js";
 import { FiArrowRight } from "react-icons/fi";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
@@ -15,8 +16,7 @@ export default function FeaturedProducts() {
   useEffect(() => {
     const loadFeatured = async () => {
       try {
-        const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
-        const res = await fetch(`${apiBase}/public/products`).then(r => r.json());
+        const res = await fetch(`${BASE_URL}/public/products`).then(r => r.json());
         if (res.success && res.data) {
           // Map database structures to ProductCard expectations
           const mapped = res.data.products.map(p => ({

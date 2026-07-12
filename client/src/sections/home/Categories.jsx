@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FiArrowRight } from "react-icons/fi";
+import { BASE_URL } from "../../config/api.js";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import steelImg from "../../categories/steel.jpg";
@@ -17,8 +18,7 @@ export default function Categories() {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
-        const res = await fetch(`${apiBase}/public/categories`).then(r => r.json());
+        const res = await fetch(`${BASE_URL}/public/categories`).then(r => r.json());
         if (res.success && res.data) {
           setCategoriesList(res.data.categories);
         }

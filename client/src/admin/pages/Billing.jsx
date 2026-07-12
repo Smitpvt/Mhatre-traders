@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiPlus, FiSearch, FiFileText, FiDownload, FiTrash2, FiX, FiRefreshCw, FiDollarSign } from 'react-icons/fi';
 import api from '../services/api.js';
+import { BASE_URL } from '../../config/api.js';
 import adminToast from '../utils/toast.js';
 import { TableSkeleton } from '../components/ui/Skeleton.jsx';
 import ButtonSpinner from '../components/ui/ButtonSpinner.jsx';
@@ -81,12 +82,11 @@ export const Billing = () => {
     adminToast.info(`Generating PDF document for invoice ${invoiceNo}...`);
     try {
       const token = localStorage.getItem('token');
-      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
       const headers = {};
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      const response = await fetch(`${apiBase}/admin/billing/${billId}/pdf`, {
+      const response = await fetch(`${BASE_URL}/admin/billing/${billId}/pdf`, {
         method: 'GET',
         headers,
         credentials: 'include'

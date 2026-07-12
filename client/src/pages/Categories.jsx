@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import SectionHeader from "../components/ui/SectionHeader";
+import { BASE_URL } from "../config/api.js";
 import { FiArrowRight } from "react-icons/fi";
 
 export default function Categories() {
@@ -11,10 +12,9 @@ export default function Categories() {
   useEffect(() => {
     const loadCatalog = async () => {
       try {
-        const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
         const [catRes, prodRes] = await Promise.all([
-          fetch(`${apiBase}/public/categories`).then(r => r.json()),
-          fetch(`${apiBase}/public/products`).then(r => r.json())
+          fetch(`${BASE_URL}/public/categories`).then(r => r.json()),
+          fetch(`${BASE_URL}/public/products`).then(r => r.json())
         ]);
         if (catRes.success) setCategoriesList(catRes.data.categories);
         if (prodRes.success) setProductsList(prodRes.data.products);

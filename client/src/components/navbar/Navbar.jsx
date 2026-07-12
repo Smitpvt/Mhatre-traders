@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiSearch, FiMenu, FiX, FiArrowRight } from "react-icons/fi";
 import { OFFICE_PHONE, OFFICE_EMAIL, OFFICE_ADDRESS } from "../../constants/contact";
+import { BASE_URL } from "../../config/api.js";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -15,8 +16,7 @@ export default function Navbar() {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
-        const res = await fetch(`${apiBase}/public/products`).then(r => r.json());
+        const res = await fetch(`${BASE_URL}/public/products`).then(r => r.json());
         if (res.success && res.data) {
           setProductsList(res.data.products);
         }

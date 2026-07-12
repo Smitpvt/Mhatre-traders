@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { BASE_URL } from "../config/api.js";
 import ProductCard from "../components/cards/ProductCard";
 import { FiArrowLeft, FiShare2, FiCheck, FiInfo } from "react-icons/fi";
 import { RiWhatsappLine } from "react-icons/ri";
@@ -19,10 +20,8 @@ export default function ProductDetails() {
     const fetchProductDetails = async () => {
       setLoading(true);
       try {
-        const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
-        
         // 1. Fetch main product details
-        const prodRes = await fetch(`${apiBase}/public/products/${slug}`).then(r => r.json());
+        const prodRes = await fetch(`${BASE_URL}/public/products/${slug}`).then(r => r.json());
         if (!prodRes.success || !prodRes.data?.product) {
           navigate("/404", { replace: true });
           return;
@@ -51,8 +50,8 @@ export default function ProductDetails() {
         setProduct(mappedProduct);
         setActiveImageIdx(0);
 
-        // 2. Fetch all products to resolve related items
-        const allProdsRes = await fetch(`${apiBase}/public/products`).then(r => r.json());
+        // 2. Fetch all products to recommend related ones (same category)
+        const allProdsRes = await fetch(`${BASE_URL}/public/products`).then(r => r.json());
         if (allProdsRes.success && allProdsRes.data?.products) {
           const categorySlug = p.category?.slug;
           const mappedRelated = allProdsRes.data.products

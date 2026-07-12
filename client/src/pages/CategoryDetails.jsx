@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { BASE_URL } from "../config/api.js";
 import ProductCard from "../components/cards/ProductCard";
 import { FiArrowLeft, FiArrowRight } from "react-icons/fi";
 
@@ -16,10 +17,8 @@ export default function CategoryDetails() {
     const fetchCategoryDetails = async () => {
       setLoading(true);
       try {
-        const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
-        
         // Fetch current category with its products
-        const catDetailsRes = await fetch(`${apiBase}/public/categories/${slug}`).then(r => r.json());
+        const catDetailsRes = await fetch(`${BASE_URL}/public/categories/${slug}`).then(r => r.json());
         if (!catDetailsRes.success || !catDetailsRes.data?.category) {
           navigate("/404", { replace: true });
           return;
@@ -45,7 +44,7 @@ export default function CategoryDetails() {
         setProductsList(mappedProds);
 
         // Fetch other divisions
-        const allCatsRes = await fetch(`${apiBase}/public/categories`).then(r => r.json());
+        const allCatsRes = await fetch(`${BASE_URL}/public/categories`).then(r => r.json());
         if (allCatsRes.success && allCatsRes.data?.categories) {
           const filtered = allCatsRes.data.categories.filter(c => c.slug !== slug).slice(0, 3);
           setOtherCategories(filtered);

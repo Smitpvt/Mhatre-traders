@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FiMail, FiPhone, FiMapPin, FiClock } from "react-icons/fi";
 import { OFFICE_PHONE, OFFICE_EMAIL, OFFICE_ADDRESS, GOOGLE_MAPS_EMBED_URL, BUSINESS_HOURS } from "../../constants/contact";
+import { BASE_URL } from "../../config/api.js";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   const [categoriesList, setCategoriesList] = useState([]);
 
   useEffect(() => {
-    const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
-    fetch(`${apiBase}/public/categories`)
+    fetch(`${BASE_URL}/public/categories`)
       .then(r => r.json())
       .then(res => {
         if (res.success && res.data) setCategoriesList(res.data.categories);

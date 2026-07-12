@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { BASE_URL } from "../config/api.js";
 import ProductCard from "../components/cards/ProductCard";
 import SectionHeader from "../components/ui/SectionHeader";
 import { FiSearch, FiSliders, FiX } from "react-icons/fi";
@@ -27,10 +28,9 @@ export default function Products() {
     const fetchCatalog = async () => {
       setLoading(true);
       try {
-        const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
         const [prodRes, catRes] = await Promise.all([
-          fetch(`${apiBase}/public/products`).then(r => r.json()),
-          fetch(`${apiBase}/public/categories`).then(r => r.json())
+          fetch(`${BASE_URL}/public/products`).then(r => r.json()),
+          fetch(`${BASE_URL}/public/categories`).then(r => r.json())
         ]);
 
         if (prodRes.success && prodRes.data) {

@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { FiPhone, FiMail } from "react-icons/fi";
 import { OFFICE_PHONE, OFFICE_EMAIL } from "../../constants/contact";
+import { BASE_URL } from "../../config/api.js";
 
 export default function CTA() {
   const [categoriesList, setCategoriesList] = useState([]);
@@ -17,8 +18,7 @@ export default function CTA() {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
-        const res = await fetch(`${apiBase}/public/categories`).then(r => r.json());
+        const res = await fetch(`${BASE_URL}/public/categories`).then(r => r.json());
         if (res.success && res.data) {
           setCategoriesList(res.data.categories);
         }
