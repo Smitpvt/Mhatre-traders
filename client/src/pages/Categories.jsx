@@ -114,7 +114,7 @@ export default function Categories() {
                   {/* Image */}
                   <div className="relative aspect-[16/8.5] overflow-hidden bg-brand-linen">
                     <img
-                      src={cat.imageUrl}
+                      src={cat.imageUrl || "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=600&auto=format&fit=crop"}
                       alt={cat.title}
                       className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                       loading="lazy"

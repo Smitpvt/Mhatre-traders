@@ -204,6 +204,8 @@ export const createProduct = asyncHandler(async (req, res, next) => {
     }
 
     return newProduct;
+  }, {
+    timeout: 30000
   });
 
   res.status(201).json(new ApiResponse('Product SKU created successfully', { product }));
@@ -282,24 +284,72 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
     updateData.applications = typeof applications === 'string' ? JSON.parse(applications) : applications;
   }
 
+  // Parse deleted image IDs
+  let deletedIds = [];
+  if (req.body.deletedImageIds) {
+    try {
+      deletedIds = typeof req.body.deletedImageIds === 'string'
+        ? JSON.parse(req.body.deletedImageIds)
+        : req.body.deletedImageIds;
+    } catch (e) {
+      console.error('Failed to parse deletedImageIds:', e);
+    }
+  }
+
   // Handle image files additions
   const newImages = [];
   if (req.files && req.files.length > 0) {
-    // Check current image list length to set displayOrder
-    const currentImagesCount = product.images.length;
+    // Check remaining active image list length to set displayOrder
+    const dbActiveImagesCount = product.images.filter(
+      img => !deletedIds.includes(img.id) && img.deletedAt === null
+    ).length;
     for (let i = 0; i < req.files.length; i++) {
       const uploadResult = await uploadToCloudinary(req.files[i].buffer, 'products');
       newImages.push({
         url: uploadResult.url,
         publicId: uploadResult.publicId,
-        displayOrder: currentImagesCount + i,
-        isPrimary: currentImagesCount === 0 && i === 0
+        displayOrder: dbActiveImagesCount + i,
+        isPrimary: dbActiveImagesCount === 0 && i === 0
       });
     }
   }
 
   // Update inside transaction
   const updatedProduct = await prisma.$transaction(async (tx) => {
+    // 0. Soft delete requested images
+    if (deletedIds.length > 0) {
+      await tx.productImage.updateMany({
+        where: {
+          id: { in: deletedIds },
+          productId: id
+        },
+        data: {
+          deletedAt: new Date()
+        }
+      });
+    }
+
+    // Check remaining active DB images
+    const dbActiveImages = product.images.filter(
+      img => !deletedIds.includes(img.id) && img.deletedAt === null
+    );
+
+    const hasPrimary = dbActiveImages.some(img => img.isPrimary);
+
+    if (!hasPrimary) {
+      if (dbActiveImages.length > 0) {
+        // Set first db image to primary
+        await tx.productImage.update({
+          where: { id: dbActiveImages[0].id },
+          data: { isPrimary: true }
+        });
+        dbActiveImages[0].isPrimary = true;
+      } else if (newImages.length > 0) {
+        // Set first new image to primary
+        newImages[0].isPrimary = true;
+      }
+    }
+
     // 1. Update Core
     const core = await tx.product.update({
       where: { id },
@@ -339,6 +389,8 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
       pricing: updatedPricing,
       inventory: updatedInventory
     };
+  }, {
+    timeout: 30000
   });
 
   res.status(200).json(new ApiResponse('Product updated successfully', { product: updatedProduct }));

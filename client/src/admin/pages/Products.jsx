@@ -20,6 +20,8 @@ export const Products = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
+  const [deletedImageIds, setDeletedImageIds] = useState([]);
   const [formLoading, setFormLoading] = useState(false);
 
   const units = ['BAG', 'PIECE', 'KG', 'TON', 'BOX', 'BUNDLE', 'FEET', 'METER', 'SHEET'];
@@ -83,6 +85,8 @@ export const Products = () => {
     setSelectedProduct(product);
     setImageFiles([]);
     setImagePreviews([]);
+    setExistingImages([]);
+    setDeletedImageIds([]);
 
     if (mode === 'edit' && product) {
       setValue('sku', product.sku);
@@ -118,7 +122,7 @@ export const Products = () => {
 
       // Load existing image previews
       if (product.images) {
-        setImagePreviews(product.images.map(img => img.url));
+        setExistingImages(product.images);
       }
     } else {
       reset({
@@ -151,6 +155,8 @@ export const Products = () => {
     setSelectedProduct(null);
     setImageFiles([]);
     setImagePreviews([]);
+    setExistingImages([]);
+    setDeletedImageIds([]);
     reset();
   };
 
@@ -167,6 +173,21 @@ export const Products = () => {
       const newPreviews = validFiles.map(file => URL.createObjectURL(file));
       setImagePreviews([...imagePreviews, ...newPreviews]);
     }
+  };
+
+  const handleDeleteExistingImage = (imageId) => {
+    setDeletedImageIds([...deletedImageIds, imageId]);
+    setExistingImages(existingImages.filter(img => img.id !== imageId));
+  };
+
+  const handleDeleteNewImage = (idx) => {
+    const updatedFiles = [...imageFiles];
+    updatedFiles.splice(idx, 1);
+    setImageFiles(updatedFiles);
+
+    const updatedPreviews = [...imagePreviews];
+    updatedPreviews.splice(idx, 1);
+    setImagePreviews(updatedPreviews);
   };
 
   // Form submit handler
@@ -221,6 +242,10 @@ export const Products = () => {
       imageFiles.forEach(file => {
         formData.append('images', file);
       });
+    }
+
+    if (deletedImageIds.length > 0) {
+      formData.append('deletedImageIds', JSON.stringify(deletedImageIds));
     }
 
     try {
@@ -703,16 +728,49 @@ export const Products = () => {
                 <h3 className="text-xs font-bold uppercase tracking-widest text-[#B56A45] border-b border-[#ECE7DF] pb-1">5. Product Gallery</h3>
                 
                 <div className="space-y-3">
-                  {imagePreviews.length > 0 && (
+                  {(existingImages.length > 0 || imagePreviews.length > 0) && (
                     <div className="flex flex-wrap gap-3">
-                      {imagePreviews.map((url, idx) => (
-                        <div key={idx} className="relative w-16 h-16 border border-[#ECE7DF] rounded-lg overflow-hidden group">
-                          <img src={url} alt="Preview" className="w-full h-full object-cover" />
-                          {idx === 0 && (
-                            <span className="absolute bottom-0 inset-x-0 bg-[#B56A45] text-[#FFFFFF] text-[8px] text-center py-0.5 font-bold uppercase">Main</span>
-                          )}
-                        </div>
-                      ))}
+                      {/* Existing Images */}
+                      {existingImages.map((img, idx) => {
+                        const isMain = idx === 0;
+                        return (
+                          <div key={img.id} className="relative w-16 h-16 border border-[#ECE7DF] rounded-lg overflow-hidden group">
+                            <img src={img.url} alt="Preview" className="w-full h-full object-cover" />
+                            {isMain && (
+                              <span className="absolute bottom-0 inset-x-0 bg-[#B56A45] text-[#FFFFFF] text-[8px] text-center py-0.5 font-bold uppercase">Main</span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteExistingImage(img.id)}
+                              className="absolute top-1 right-1 p-0.5 bg-red-600 hover:bg-red-700 text-white rounded-full transition-colors shadow-sm cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Delete Image"
+                            >
+                              <FiX className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        );
+                      })}
+
+                      {/* Newly selected image previews */}
+                      {imagePreviews.map((url, idx) => {
+                        const isMain = existingImages.length === 0 && idx === 0;
+                        return (
+                          <div key={idx} className="relative w-16 h-16 border border-[#ECE7DF] rounded-lg overflow-hidden group">
+                            <img src={url} alt="New Preview" className="w-full h-full object-cover" />
+                            {isMain && (
+                              <span className="absolute bottom-0 inset-x-0 bg-[#B56A45] text-[#FFFFFF] text-[8px] text-center py-0.5 font-bold uppercase">Main</span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteNewImage(idx)}
+                              className="absolute top-1 right-1 p-0.5 bg-red-600 hover:bg-red-700 text-white rounded-full transition-colors shadow-sm cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Remove Image"
+                            >
+                              <FiX className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
 
