@@ -121,7 +121,7 @@ export default function CategoryDetails() {
         title={`${category.title} Division`}
         description={category.description || `Explore our high-quality ${category.title} solutions and materials from leading brands at Mhatre Traders.`}
         keywords={`${category.slug}, ${category.title} supplies alibaug, building materials`}
-        ogImage={category.imageUrl}
+        ogImage={category.imageUrl || "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=600&auto=format&fit=crop"}
         schema={detailsSchema}
       />
       
@@ -130,7 +130,7 @@ export default function CategoryDetails() {
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-brand-dark/50 z-10" />
           <img
-            src={category.imageUrl}
+            src={category.imageUrl || "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=600&auto=format&fit=crop"}
             alt={category.title}
             className="w-full h-full object-cover origin-center animate-zoom-out-hero"
           />
@@ -245,7 +245,7 @@ export default function CategoryDetails() {
                     className="group block relative aspect-[4/3] rounded-2xl overflow-hidden border border-brand-border cursor-pointer"
                   >
                     <img
-                      src={c.imageUrl}
+                      src={c.imageUrl || "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=600&auto=format&fit=crop"}
                       alt={c.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />

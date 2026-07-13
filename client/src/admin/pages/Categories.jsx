@@ -18,6 +18,7 @@ export const Categories = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [deleteImage, setDeleteImage] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
 
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
@@ -52,6 +53,7 @@ export const Categories = () => {
     setSelectedCategory(category);
     setImageFile(null);
     setImagePreview(null);
+    setDeleteImage(false);
 
     if (mode === 'edit' && category) {
       setValue('title', category.title);
@@ -74,6 +76,7 @@ export const Categories = () => {
     setSelectedCategory(null);
     setImageFile(null);
     setImagePreview(null);
+    setDeleteImage(false);
     reset();
   };
 
@@ -87,6 +90,7 @@ export const Categories = () => {
       }
       setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
+      setDeleteImage(false);
     }
   };
 
@@ -100,6 +104,9 @@ export const Categories = () => {
     formData.append('visibility', data.visibility);
     if (imageFile) {
       formData.append('image', imageFile);
+    }
+    if (deleteImage) {
+      formData.append('deleteImage', true);
     }
 
     try {
@@ -379,11 +386,25 @@ export const Categories = () => {
                 <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Category Banner Image</label>
                 <div className="flex items-center gap-4">
                   {imagePreview && (
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="w-20 h-20 object-cover rounded-lg border border-[#ECE7DF]"
-                    />
+                    <div className="relative w-20 h-20 border border-[#ECE7DF] rounded-lg overflow-hidden group">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImagePreview(null);
+                          setImageFile(null);
+                          setDeleteImage(true);
+                        }}
+                        className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-sm cursor-pointer"
+                        title="Delete Image"
+                      >
+                        <FiTrash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   )}
                   <label className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-[#ECE7DF] rounded-lg p-4 bg-[#FCFBF8] cursor-pointer hover:bg-zinc-50 transition-colors">
                     <FiUpload className="w-5 h-5 text-zinc-400 mb-1" />

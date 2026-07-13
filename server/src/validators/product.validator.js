@@ -2,7 +2,7 @@ import { body } from 'express-validator';
 
 const VALID_UNITS = [
   'BAG', 'PIECE', 'KG', 'TON', 'BOX', 'BUNDLE', 
-  'FEET', 'METER', 'SHEET', 'CM', 'INCH', 'LITER'
+  'FEET', 'METER', 'SHEET', 'CM', 'INCH', 'LITER', 'ROLL'
 ];
 
 const VALID_STATUSES = ['ACTIVE', 'INACTIVE', 'DRAFT'];

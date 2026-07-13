@@ -136,6 +136,8 @@ export const updateCategory = asyncHandler(async (req, res, next) => {
     // Upload new image, but do NOT delete old image to comply with data safety guidelines
     const uploadResult = await uploadToCloudinary(req.file.buffer, 'categories');
     updateData.imageUrl = uploadResult.url;
+  } else if (req.body.deleteImage === 'true' || req.body.deleteImage === true) {
+    updateData.imageUrl = "";
   }
 
   const updatedCategory = await prisma.category.update({
