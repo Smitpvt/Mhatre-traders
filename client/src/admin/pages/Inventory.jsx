@@ -530,7 +530,7 @@ export const Inventory = () => {
                   onChange={(e) => setUnitInput(e.target.value)}
                   className="w-full px-3 py-2 bg-[#FCFBF8] border border-[#ECE7DF] rounded-lg text-sm focus:outline-hidden focus:border-[#B56A45] text-zinc-700"
                 >
-                  {['BAG', 'PIECE', 'KG', 'TON', 'BOX', 'BUNDLE', 'FEET', 'METER', 'SHEET'].map(u => (
+                  {['BAG', 'PIECE', 'KG', 'TON', 'BOX', 'BUNDLE', 'FEET', 'METER', 'SHEET', 'CM', 'INCH', 'LITER', 'ROLL'].map(u => (
                     <option key={u} value={u}>{u}</option>
                   ))}
                 </select>

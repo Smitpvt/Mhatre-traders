@@ -24,7 +24,7 @@ export const Products = () => {
   const [deletedImageIds, setDeletedImageIds] = useState([]);
   const [formLoading, setFormLoading] = useState(false);
 
-  const units = ['BAG', 'PIECE', 'KG', 'TON', 'BOX', 'BUNDLE', 'FEET', 'METER', 'SHEET'];
+  const units = ['BAG', 'PIECE', 'KG', 'TON', 'BOX', 'BUNDLE', 'FEET', 'METER', 'SHEET', 'CM', 'INCH', 'LITER', 'ROLL'];
   const statuses = ['ACTIVE', 'INACTIVE', 'DRAFT'];
 
   const { register, handleSubmit, reset, setValue, control, watch, formState: { errors } } = useForm({

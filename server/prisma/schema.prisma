@@ -34,7 +34,7 @@ enum ProductUnit {
   SHEET
   CM
   INCH
-  BUNDLE
+  LITER
   ROLL
 }
 
