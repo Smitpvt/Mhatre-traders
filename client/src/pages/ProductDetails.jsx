@@ -7,6 +7,8 @@ import { RiWhatsappLine } from "react-icons/ri";
 import toast from "react-hot-toast";
 import { WHATSAPP_NUMBER } from "../constants/contact";
 import SEO from "../components/seo/SEO";
+import { products as localProducts } from "../data/products.js";
+import { categories as localCategories } from "../data/categories.js";
 
 export default function ProductDetails() {
   const { slug } = useParams();
@@ -25,8 +27,7 @@ export default function ProductDetails() {
       // 1. Fetch main product details
       const prodRes = await fetch(`${BASE_URL}/public/products/${slug}`).then(r => r.json());
       if (!prodRes.success || !prodRes.data?.product) {
-        navigate("/404", { replace: true });
-        return;
+        throw new Error("API product details fetch failed");
       }
 
       const p = prodRes.data.product;
@@ -77,8 +78,24 @@ export default function ProductDetails() {
       }
 
     } catch (err) {
-      console.error("Failed to load product details", err);
-      setError(true);
+      console.warn("Failed to load product details from API, using fallback", err);
+      const localProd = localProducts.find(p => p.slug === slug);
+      if (!localProd) {
+        navigate("/404", { replace: true });
+        return;
+      }
+      
+      const localCat = localCategories.find(c => c.slug === localProd.category);
+      setProduct({
+        ...localProd,
+        categoryTitle: localCat ? localCat.title : "General Division"
+      });
+      setActiveImageIdx(0);
+      setRelatedProducts(
+        localProducts
+          .filter(rp => rp.category === localProd.category && rp.slug !== slug)
+          .slice(0, 3)
+      );
     } finally {
       setLoading(false);
     }

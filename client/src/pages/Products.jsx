@@ -5,6 +5,8 @@ import ProductCard from "../components/cards/ProductCard";
 import SectionHeader from "../components/ui/SectionHeader";
 import { FiSearch, FiSliders, FiX } from "react-icons/fi";
 import SEO from "../components/seo/SEO";
+import { products as localProducts } from "../data/products.js";
+import { categories as localCategories } from "../data/categories.js";
 
 const ITEMS_PER_PAGE = 9;
 
@@ -52,11 +54,13 @@ export default function Products() {
         setDbProducts(mapped);
         setDbCategories(catRes.data.categories);
       } else {
-        setError(true);
+        setDbProducts(localProducts);
+        setDbCategories(localCategories);
       }
     } catch (err) {
-      console.error("Failed to load products page content", err);
-      setError(true);
+      console.warn("Failed to load products page content from API, using fallback", err);
+      setDbProducts(localProducts);
+      setDbCategories(localCategories);
     } finally {
       setLoading(false);
     }

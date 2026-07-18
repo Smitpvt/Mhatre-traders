@@ -8,6 +8,7 @@ import steelImg from "../../categories/steel.jpg";
 import cementImg from "../../categories/cement.jpg";
 import pipesImg from "../../categories/pipes.jpg";
 import roofImg from "../../categories/roof1.jpg";
+import { categories } from "../../data/categories.js";
 
 import "swiper/css";
 
@@ -24,11 +25,11 @@ export default function Categories() {
       if (res.success && res.data) {
         setCategoriesList(res.data.categories);
       } else {
-        setError(true);
+        setCategoriesList(categories);
       }
     } catch (err) {
-      console.error("Failed to load homepage categories", err);
-      setError(true);
+      console.warn("Failed to load homepage categories from API, using fallback", err);
+      setCategoriesList(categories);
     } finally {
       setLoading(false);
     }

@@ -18,9 +18,9 @@ export default function Footer() {
   }, []);
 
   const footerCategories = categoriesList.length > 0 ? categoriesList.slice(0, 4) : [
-    { id: '1', title: 'Cement & Aggregates', slug: 'cement-aggregates' },
-    { id: '2', title: 'Structural Steel & Rebars', slug: 'steel-rebars' },
-    { id: '3', title: 'Pipes & Fittings', slug: 'pipes-fittings' }
+    { id: '1', title: 'Cement & Concrete Materials', slug: 'cement-concrete' },
+    { id: '2', title: 'Steel & Construction Materials', slug: 'steel-construction' },
+    { id: '3', title: 'Plumbing & Pipes', slug: 'plumbing-pipes' }
   ];
 
   return (

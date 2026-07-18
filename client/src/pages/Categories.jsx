@@ -4,6 +4,8 @@ import SectionHeader from "../components/ui/SectionHeader";
 import { BASE_URL } from "../config/api.js";
 import { FiArrowRight } from "react-icons/fi";
 import SEO from "../components/seo/SEO";
+import { categories as localCategories } from "../data/categories.js";
+import { products as localProducts } from "../data/products.js";
 
 export default function Categories() {
   const [categoriesList, setCategoriesList] = useState([]);
@@ -23,11 +25,13 @@ export default function Categories() {
         setCategoriesList(catRes.data.categories);
         setProductsList(prodRes.data.products);
       } else {
-        setError(true);
+        setCategoriesList(localCategories);
+        setProductsList(localProducts.map(p => ({ ...p, categoryId: p.category })));
       }
     } catch (err) {
-      console.error("Failed to load public catalog", err);
-      setError(true);
+      console.warn("Failed to load public catalog from API, using fallback", err);
+      setCategoriesList(localCategories);
+      setProductsList(localProducts.map(p => ({ ...p, categoryId: p.category })));
     } finally {
       setLoading(false);
     }
