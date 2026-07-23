@@ -28,13 +28,14 @@ enum ProductUnit {
   KG
   TON
   BOX
+  BUNDLE
   LITER
   FEET
   METER
   SHEET
   CM
   INCH
-  LITER
+  ROLL
 }
 
 enum TransactionType {

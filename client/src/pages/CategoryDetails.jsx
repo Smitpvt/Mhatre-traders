@@ -4,6 +4,8 @@ import { BASE_URL } from "../config/api.js";
 import ProductCard from "../components/cards/ProductCard";
 import { FiArrowLeft, FiArrowRight } from "react-icons/fi";
 import SEO from "../components/seo/SEO";
+import { categories as localCategories } from "../data/categories.js";
+import { products as localProducts } from "../data/products.js";
 
 export default function CategoryDetails() {
   const { slug } = useParams();
@@ -22,8 +24,7 @@ export default function CategoryDetails() {
       // Fetch current category with its products
       const catDetailsRes = await fetch(`${BASE_URL}/public/categories/${slug}`).then(r => r.json());
       if (!catDetailsRes.success || !catDetailsRes.data?.category) {
-        navigate("/404", { replace: true });
-        return;
+        throw new Error("API category details fetch failed");
       }
 
       const catData = catDetailsRes.data.category;
@@ -53,8 +54,15 @@ export default function CategoryDetails() {
       }
 
     } catch (err) {
-      console.error("Failed to load category details", err);
-      setError(true);
+      console.warn("Failed to load category details from API, using fallback", err);
+      const localCat = localCategories.find(c => c.slug === slug);
+      if (!localCat) {
+        navigate("/404", { replace: true });
+        return;
+      }
+      setCategory(localCat);
+      setProductsList(localProducts.filter(p => p.category === slug));
+      setOtherCategories(localCategories.filter(c => c.slug !== slug).slice(0, 3));
     } finally {
       setLoading(false);
     }

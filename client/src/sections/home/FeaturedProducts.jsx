@@ -6,6 +6,7 @@ import { FiArrowRight } from "react-icons/fi";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import ProductCard from "../../components/cards/ProductCard";
+import { products } from "../../data/products.js";
 
 import "swiper/css";
 
@@ -39,11 +40,11 @@ export default function FeaturedProducts() {
         // Remove the strict filter so the carousel doesn't disappear when there are no explicitly "featured" products
         setFeaturedProducts(mapped.slice(0, 15));
       } else {
-        setError(true);
+        setFeaturedProducts(products.filter(p => p.featured).slice(0, 15));
       }
     } catch (err) {
-      console.error("Failed to load featured products", err);
-      setError(true);
+      console.warn("Failed to load featured products from API, using fallback", err);
+      setFeaturedProducts(products.filter(p => p.featured).slice(0, 15));
     } finally {
       setLoading(false);
     }
