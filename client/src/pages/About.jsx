@@ -7,7 +7,7 @@ import SEO from "../components/seo/SEO";
 
 export default function About() {
   const stats = [
-    { value: 30, suffix: "+", label: "Years in Business" },
+    { value: 12, suffix: "+", label: "Years in Business" },
     { value: 1500, suffix: "+", label: "Developments Supplied" },
     { value: 200, suffix: "+", label: "Contractor Partnerships" },
     { value: 100, suffix: "%", label: "Genuine Guarantee" }
@@ -31,12 +31,7 @@ export default function About() {
     }
   ];
 
-  const milestones = [
-    { year: "1996", title: "Foundation in Chaul", desc: "Mhatre Traders established as a local brick, sand, and cement dealer catering to initial local houses." },
-    { year: "2006", title: "Steel & Plumbing Expansion", desc: "Acquired authorized dealership for TMT reinforcement bars and premium PVC plumbing piping." },
-    { year: "2015", title: "Fleet & Warehousing", desc: "Constructed our central high-volume storage facility and organized a private delivery truck network." },
-    { year: "2024", title: "Luxury Bath & Interiors", desc: "Introduced large-format vitrified floor tiles, designer panels, and premium brass mixer fittings." }
-  ];
+
 
   const aboutSchema = {
     "@context": "https://schema.org",
@@ -61,7 +56,7 @@ export default function About() {
     <div className="pt-36 pb-24 bg-brand-ivory min-h-screen relative overflow-hidden">
       <SEO 
         title="About Us | Alibaug's Building Materials Heritage"
-        description="Serving Alibaug since 1996, Mhatre Traders supplies high-strength steel rebars, building cements, and sanitaryware from factory-certified partners."
+        description="Serving Alibaug since 2014, Mhatre Traders supplies high-strength steel rebars, building cements, and sanitaryware from factory-certified partners."
         keywords="mhatre traders history, construction dealer alibaug, building supply heritage chaul"
         schema={aboutSchema}
       />
@@ -75,7 +70,7 @@ export default function About() {
           <SectionHeader
             subtitle="OUR ORIGIN"
             title="Building Alibaug's Foundations"
-            description="Since 1996, Mhatre Traders has supplied certified structural steels, cements, and interior finishes to the changing landscape of Alibaug taluka."
+            description="Since 2014, Mhatre Traders has supplied certified structural steels, cements, and interior finishes to the changing landscape of Alibaug taluka."
             as="h1"
           />
         </div>
@@ -152,43 +147,7 @@ export default function About() {
           ))}
         </div>
 
-        {/* Timeline Section */}
-        <div className="space-y-16">
-          <SectionHeader
-            subtitle="MILESTONES"
-            title="Chronological Growth"
-            description="Our timeline defines the expansion of our inventory capacity and supply capabilities."
-            align="center"
-          />
 
-          <div className="max-w-4xl mx-auto relative border-l-[0.5px] border-brand-border pl-6 md:pl-12 space-y-12">
-            {milestones.map((milestone, idx) => (
-              <motion.div
-                key={milestone.year}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: idx * 0.15 }}
-                className="relative"
-              >
-                {/* Timeline Dot Indicator */}
-                <div className="absolute -left-[31px] md:-left-[55px] top-1.5 w-4 h-4 rounded-full bg-brand-terracotta border-4 border-brand-ivory ring-1 ring-brand-border z-10" />
-
-                <div className="space-y-2">
-                  <span className="font-headings font-semibold text-2xl text-brand-terracotta">
-                    {milestone.year}
-                  </span>
-                  <h4 className="font-headings font-bold text-lg text-brand-dark uppercase tracking-wide">
-                    {milestone.title}
-                  </h4>
-                  <p className="text-sm text-brand-muted font-light leading-relaxed max-w-2xl">
-                    {milestone.desc}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
 
       </div>
     </div>
