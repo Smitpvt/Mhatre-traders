@@ -18,7 +18,15 @@ export default function Navbar() {
       try {
         const res = await fetch(`${BASE_URL}/public/products`).then(r => r.json());
         if (res.success && res.data) {
-          setProductsList(res.data.products);
+          const mapped = res.data.products.map(p => ({
+            id: p.id,
+            slug: p.slug,
+            name: p.name,
+            category: p.category?.slug || "general",
+            brand: p.brand || "Mhatre Traders",
+            description: p.description || ""
+          }));
+          setProductsList(mapped);
         }
       } catch (err) {
         console.error(err);
