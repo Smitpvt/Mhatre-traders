@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const envSchema = z.object({
-  PORT: z.coerce.number().default(5000),
+  PORT: z.union([z.coerce.number(), z.string()]).default(5000),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   DATABASE_URL: z.string().url("DATABASE_URL must be a valid PostgreSQL connection URL"),
   DIRECT_URL: z.string().url("DIRECT_URL must be a valid PostgreSQL connection URL"),
