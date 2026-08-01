@@ -43,19 +43,20 @@ export const updateCompanyDetails = asyncHandler(async (req, res, next) => {
 
   const keys = Object.keys(updates);
   
-  // Update keys without interactive transaction to avoid P2028 PgBouncer timeout
-  const outputs = [];
-  for (const key of keys) {
-    // Only update if key exists (can use updateMany to avoid findUnique)
-    const updated = await prisma.setting.updateMany({
+  const updateOperations = keys.map(key => 
+    prisma.setting.updateMany({
       where: { key },
       data: { value: String(updates[key]) }
-    });
-    if (updated.count > 0) {
-      outputs.push({ key, value: String(updates[key]) });
-    }
-  }
-  const results = outputs;
+    })
+  );
+
+  // Execute all updates in a single roundtrip batch transaction
+  await prisma.$transaction(updateOperations);
+
+  // Re-fetch all updated settings at once to return the updated state
+  const results = await prisma.setting.findMany({
+    where: { key: { in: keys } }
+  });
 
   res.status(200).json(new ApiResponse('Company settings updated successfully', { settings: results }));
 });
