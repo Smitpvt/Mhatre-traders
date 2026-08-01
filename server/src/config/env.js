@@ -21,7 +21,12 @@ const envSchema = z.object({
   CLOUDINARY_API_KEY: z.string({ required_error: "CLOUDINARY_API_KEY is required" }),
   CLOUDINARY_API_SECRET: z.string({ required_error: "CLOUDINARY_API_SECRET is required" }),
   ADMIN_EMAIL: z.string().email().default('admin@mhatretraders.com'),
-  ADMIN_PASSWORD: z.string().min(6).default('admin12345')
+  ADMIN_PASSWORD: z.string().min(6).default('admin12345'),
+  SMTP_HOST: z.string().default('smtp.gmail.com'),
+  SMTP_PORT: z.coerce.number().default(465),
+  SMTP_USER: z.string().default('mhatretraders86@gmail.com'),
+  SMTP_PASS: z.string(),
+  FROM_EMAIL: z.string().email().default('mhatretraders86@gmail.com')
 });
 
 const parsed = envSchema.safeParse(process.env);

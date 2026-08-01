@@ -8,7 +8,7 @@ const server = app.listen(env.PORT, () => {
   logger.info(`🚀 Server initialized in [${env.NODE_ENV}] mode on port: ${env.PORT}`);
   prisma.$connect()
     .then(() => logger.info('Database connection pool warmed up successfully.'))
-    .catch((err) => logger.error('Database connection warmup failed:', err.message));
+    .catch((err) => logger.error({ error: err.message }, 'Database connection warmup failed'));
 });
 
 // Graceful termination handler
@@ -64,3 +64,6 @@ process.on('uncaughtException', (error) => {
   
   process.exit(1);
 });
+
+// trigger restart
+

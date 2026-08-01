@@ -21,6 +21,8 @@ export const Billing = () => {
   // Form Fields State
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [sendEmail, setSendEmail] = useState(false);
   const [customerGst, setCustomerGst] = useState('');
   const [billingAddress, setBillingAddress] = useState('');
   const [deliveryAddress, setDeliveryAddress] = useState('');
@@ -109,6 +111,19 @@ export const Billing = () => {
       adminToast.error('Failed to download PDF invoice');
     }
   };
+  const handleDeleteBill = async (billId, invoiceNo) => {
+    if (!window.confirm(`Are you sure you want to permanently delete invoice ${invoiceNo}? This cannot be undone.`)) return;
+    
+    try {
+      const res = await api.delete(`/admin/billing/${billId}`);
+      if (res.success) {
+        adminToast.success(`Invoice ${invoiceNo} deleted successfully`);
+        fetchBills();
+      }
+    } catch (err) {
+      adminToast.error(err.message || 'Failed to delete invoice');
+    }
+  };
 
   // Quick Payment status updates directly from table row
   const changePaymentStatus = async (billId, newStatus) => {
@@ -129,6 +144,8 @@ export const Billing = () => {
   const openCreatorModal = () => {
     setCustomerName('');
     setCustomerPhone('');
+    setCustomerEmail('');
+    setSendEmail(false);
     setCustomerGst('');
     setBillingAddress('');
     setDeliveryAddress('');
@@ -275,6 +292,8 @@ export const Billing = () => {
     const payload = {
       customerName,
       customerPhone,
+      customerEmail,
+      sendEmail,
       customerGst: customerGst || undefined,
       billingAddress,
       deliveryAddress: deliveryAddress || billingAddress,
@@ -403,14 +422,23 @@ export const Billing = () => {
                       </select>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => handleDownloadPdf(bill.id, bill.invoiceNumber)}
-                        className="flex items-center gap-1.5 ml-auto bg-[#FFFFFF] hover:bg-[#FCFBF8] border border-[#ECE7DF] px-2.5 py-1.5 rounded-lg text-xs font-bold text-zinc-700 transition-colors cursor-pointer"
-                        title="Download Invoice PDF"
-                      >
-                        <FiDownload className="w-3.5 h-3.5" />
-                        <span>PDF</span>
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleDownloadPdf(bill.id, bill.invoiceNumber)}
+                          className="flex items-center gap-1.5 bg-[#FFFFFF] hover:bg-[#FCFBF8] border border-[#ECE7DF] px-2.5 py-1.5 rounded-lg text-xs font-bold text-zinc-700 transition-colors cursor-pointer"
+                          title="Download Invoice PDF"
+                        >
+                          <FiDownload className="w-3.5 h-3.5" />
+                          <span>PDF</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteBill(bill.id, bill.invoiceNumber)}
+                          className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 border border-red-200 px-2.5 py-1.5 rounded-lg text-xs font-bold text-red-700 transition-colors cursor-pointer"
+                          title="Delete Invoice"
+                        >
+                          <FiTrash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -484,6 +512,18 @@ export const Billing = () => {
                       placeholder="e.g. +91 99887 76655"
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
+                      className="w-full px-3 py-2 bg-[#FCFBF8] border border-[#ECE7DF] rounded-lg text-sm focus:outline-hidden focus:border-[#B56A45]"
+                    />
+                  </div>
+
+                  {/* Customer Email */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Client Email (Optional)</label>
+                    <input
+                      type="email"
+                      placeholder="e.g. ramesh@example.com"
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
                       className="w-full px-3 py-2 bg-[#FCFBF8] border border-[#ECE7DF] rounded-lg text-sm focus:outline-hidden focus:border-[#B56A45]"
                     />
                   </div>
@@ -799,7 +839,19 @@ export const Billing = () => {
 
                   </div>
 
-                  <div className="pt-4 flex justify-end gap-3">
+                  <div className="pt-4 flex justify-end gap-3 flex-wrap">
+                    <div className="flex items-center gap-2 mr-auto">
+                      <input
+                        type="checkbox"
+                        id="sendEmailCheckbox"
+                        checked={sendEmail}
+                        onChange={(e) => setSendEmail(e.target.checked)}
+                        className="w-4 h-4 text-[#B56A45] bg-[#FCFBF8] border-[#ECE7DF] rounded focus:ring-[#B56A45] focus:ring-2"
+                      />
+                      <label htmlFor="sendEmailCheckbox" className="text-xs text-zinc-600 cursor-pointer font-medium">
+                        Email Invoice to Client
+                      </label>
+                    </div>
                     <button
                       type="button"
                       disabled={formLoading}
