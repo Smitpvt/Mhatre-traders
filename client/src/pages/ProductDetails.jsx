@@ -385,9 +385,11 @@ export default function ProductDetails() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-x-visible sm:pb-0">
               {relatedProducts.map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <div key={p.id} className="min-w-[280px] w-[85%] sm:w-auto sm:min-w-0 snap-start shrink-0 sm:shrink">
+                  <ProductCard product={p} />
+                </div>
               ))}
             </div>
           </div>
