@@ -81,6 +81,11 @@ export default function Products() {
     setCurrentPage(1);
   }, [searchQuery, selectedCategory, inStockOnly, sortBy]);
 
+  // Scroll to top on pagination page change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentPage]);
+
   // Filter and Sort logic
   const filteredProducts = dbProducts
     .filter((product) => {

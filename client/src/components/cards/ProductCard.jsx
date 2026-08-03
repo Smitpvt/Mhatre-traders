@@ -13,7 +13,7 @@ export default function ProductCard({ product }) {
   );
 
   return (
-    <div className="group bg-white border border-brand-border rounded-2xl overflow-hidden hover:translate-y-[-3px] transition-all duration-300 flex flex-col justify-between h-full shadow-sm hover:shadow-md">
+    <div className="group relative bg-white border border-brand-border rounded-2xl overflow-hidden hover:translate-y-[-3px] transition-all duration-300 flex flex-col justify-between h-full shadow-sm hover:shadow-md">
       
       {/* Product Image: Aspect Ratio [4/3] to reduce height and make image occupy ~65-70% of card */}
       <div className="relative overflow-hidden aspect-[4/3] bg-brand-linen/40 border-b border-brand-border/20">
@@ -60,7 +60,7 @@ export default function ProductCard({ product }) {
         <div className="pt-3 mt-3 border-t border-brand-border/40 flex items-center justify-between">
           <Link
             to={`/products/${slug}`}
-            className="text-[13px] font-semibold text-brand-dark hover:text-brand-terracotta transition-colors"
+            className="text-[13px] font-semibold text-brand-dark hover:text-brand-terracotta transition-colors before:absolute before:inset-0 before:z-10 before:content-['']"
           >
             Details
           </Link>
@@ -68,7 +68,7 @@ export default function ProductCard({ product }) {
             href={`https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMessage}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 bg-brand-terracotta hover:bg-brand-terracotta-dark text-white text-[11px] font-sans font-semibold uppercase tracking-wider px-3 py-1 rounded-full transition-all duration-300"
+            className="relative z-20 inline-flex items-center gap-1 bg-brand-terracotta hover:bg-brand-terracotta-dark text-white text-[11px] font-sans font-semibold uppercase tracking-wider px-3 py-1 rounded-full transition-all duration-300"
           >
             <RiWhatsappLine className="text-xs" /> Quote
           </a>
