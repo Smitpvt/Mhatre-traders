@@ -43,20 +43,19 @@ export const updateCompanyDetails = asyncHandler(async (req, res, next) => {
 
   const keys = Object.keys(updates);
   
-  // Update keys inside database transaction
-  const results = await prisma.$transaction(async (tx) => {
-    const outputs = [];
-    for (const key of keys) {
-      const setting = await tx.setting.findUnique({ where: { key } });
-      if (setting) {
-        const updated = await tx.setting.update({
-          where: { key },
-          data: { value: String(updates[key]) }
-        });
-        outputs.push(updated);
-      }
-    }
-    return outputs;
+  const updateOperations = keys.map(key => 
+    prisma.setting.updateMany({
+      where: { key },
+      data: { value: String(updates[key]) }
+    })
+  );
+
+  // Execute all updates in a single roundtrip batch transaction
+  await prisma.$transaction(updateOperations);
+
+  // Re-fetch all updated settings at once to return the updated state
+  const results = await prisma.setting.findMany({
+    where: { key: { in: keys } }
   });
 
   res.status(200).json(new ApiResponse('Company settings updated successfully', { settings: results }));

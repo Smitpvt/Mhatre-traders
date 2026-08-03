@@ -90,7 +90,7 @@ export default function Footer() {
             </li>
             <li className="flex items-start gap-2">
               <FiClock className="text-brand-terracotta mt-0.5 shrink-0" />
-              <div className="font-normal">
+              <div className="font-normal whitespace-pre-line">
                 <p>{BUSINESS_HOURS}</p>
               </div>
             </li>
