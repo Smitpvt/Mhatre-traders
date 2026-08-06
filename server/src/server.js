@@ -18,6 +18,10 @@ const shutdown = (signal) => {
   server.close(async () => {
     try {
       await prisma.$disconnect();
+      if (globalThis.prismaPool) {
+        await globalThis.prismaPool.end();
+        logger.info('Database connection pool ended cleanly.');
+      }
       logger.info('Database client disconnected cleanly.');
     } catch (err) {
       logger.error({ msg: 'Database disconnection failed during shutdown', error: err.message });
@@ -48,6 +52,9 @@ process.on('unhandledRejection', (reason, promise) => {
   server.close(async () => {
     try {
       await prisma.$disconnect();
+      if (globalThis.prismaPool) {
+        await globalThis.prismaPool.end();
+      }
     } catch (err) {
       logger.error({ msg: 'Failed to disconnect DB on unhandled rejection', error: err.message });
     }
