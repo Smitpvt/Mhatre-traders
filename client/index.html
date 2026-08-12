@@ -9,7 +9,23 @@
     <link rel="manifest" href="/site.webmanifest">
     <meta name="theme-color" content="#B94A24" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','%VITE_GTM_ID%');</script>
+    <!-- End Google Tag Manager -->
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=%VITE_GA_ID%"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', '%VITE_GA_ID%');
+    </script>
+
     <!-- SEO Meta Tags -->
     <title>Mhatre Traders | Premium Building Materials &amp; Construction Supplies, Alibaug</title>
     <meta name="description" content="Mhatre Traders in Chaul, Alibaug is a luxury industrial building materials and hardware supplier. We provide steel, cement, roofing sheets, electricals, plumbing, tiles, paints, and sanitaryware." />
@@ -23,6 +39,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   </head>
   <body class="bg-[#FCFBF8] text-[#1E1E1B] antialiased selection:bg-[#B56A45]/10 selection:text-[#B56A45]">
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=%VITE_GTM_ID%"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
