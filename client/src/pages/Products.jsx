@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { BASE_URL } from "../config/api.js";
 import ProductCard from "../components/cards/ProductCard";
@@ -10,6 +10,21 @@ import { categories as localCategories } from "../data/categories.js";
 
 const ITEMS_PER_PAGE = 9;
 
+const getPageRange = (currentPage, totalPages, maxVisible) => {
+  let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+  let end = Math.min(totalPages, start + maxVisible - 1);
+
+  if (end - start + 1 < maxVisible) {
+    start = Math.max(1, end - maxVisible + 1);
+  }
+
+  const pages = [];
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+  return pages;
+};
+
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
   
@@ -19,12 +34,36 @@ export default function Products() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  // Sync state if URL parameters change
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "all");
-  const [inStockOnly, setInStockOnly] = useState(false);
-  const [sortBy, setSortBy] = useState("name-asc");
-  const [currentPage, setCurrentPage] = useState(1);
+  // Load saved state from sessionStorage
+  const savedState = (() => {
+    try {
+      const saved = sessionStorage.getItem("products_page_state");
+      return saved ? JSON.parse(saved) : {};
+    } catch (e) {
+      console.warn("Failed to load saved pagination state", e);
+      return {};
+    }
+  })();
+
+  // Sync state if URL parameters change / restore from sessionStorage
+  const [searchQuery, setSearchQuery] = useState(() => {
+    return searchParams.get("search") || savedState.searchQuery || "";
+  });
+  const [selectedCategory, setSelectedCategory] = useState(() => {
+    return searchParams.get("category") || savedState.selectedCategory || "all";
+  });
+  const [inStockOnly, setInStockOnly] = useState(() => {
+    if (searchParams.has("inStock")) return searchParams.get("inStock") === "true";
+    return savedState.inStockOnly !== undefined ? savedState.inStockOnly : false;
+  });
+  const [sortBy, setSortBy] = useState(() => {
+    return searchParams.get("sort") || savedState.sortBy || "name-asc";
+  });
+  const [currentPage, setCurrentPage] = useState(() => {
+    const urlPage = searchParams.get("page");
+    if (urlPage) return parseInt(urlPage, 10);
+    return savedState.currentPage || 1;
+  });
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   const fetchCatalog = async () => {
@@ -72,14 +111,99 @@ export default function Products() {
   }, []);
 
   useEffect(() => {
-    setSearchQuery(searchParams.get("search") || "");
-    setSelectedCategory(searchParams.get("category") || "all");
+    const searchVal = searchParams.get("search");
+    if (searchVal !== null) setSearchQuery(searchVal);
+    
+    const catVal = searchParams.get("category");
+    if (catVal !== null) setSelectedCategory(catVal);
+    
+    const inStockVal = searchParams.get("inStock");
+    if (inStockVal !== null) setInStockOnly(inStockVal === "true");
+
+    const sortVal = searchParams.get("sort");
+    if (sortVal !== null) setSortBy(sortVal);
+
+    const pageVal = searchParams.get("page");
+    if (pageVal !== null) setCurrentPage(parseInt(pageVal, 10));
   }, [searchParams]);
 
-  // Reset page when filters change
+  // Save page state to sessionStorage whenever it changes
   useEffect(() => {
-    setCurrentPage(1);
+    const stateToSave = {
+      searchQuery,
+      selectedCategory,
+      inStockOnly,
+      sortBy,
+      currentPage,
+    };
+    sessionStorage.setItem("products_page_state", JSON.stringify(stateToSave));
+  }, [searchQuery, selectedCategory, inStockOnly, sortBy, currentPage]);
+
+  // Sync state to URL search parameters
+  useEffect(() => {
+    const params = {};
+    if (searchQuery) params.search = searchQuery;
+    if (selectedCategory && selectedCategory !== "all") params.category = selectedCategory;
+    if (inStockOnly) params.inStock = "true";
+    if (sortBy && sortBy !== "name-asc") params.sort = sortBy;
+    if (currentPage > 1) params.page = currentPage.toString();
+
+    const currentParams = Object.fromEntries(searchParams.entries());
+    const hasChanged = Object.keys(params).some(k => params[k] !== currentParams[k]) ||
+                       Object.keys(currentParams).some(k => currentParams[k] !== params[k]);
+
+    if (hasChanged) {
+      setSearchParams(params, { replace: true });
+    }
+  }, [searchQuery, selectedCategory, inStockOnly, sortBy, currentPage, setSearchParams, searchParams]);
+
+  // Reset page when filters change (skip initial mount to preserve state)
+  const isFiltersMounted = useRef(false);
+  useEffect(() => {
+    if (isFiltersMounted.current) {
+      setCurrentPage(1);
+    } else {
+      isFiltersMounted.current = true;
+    }
   }, [searchQuery, selectedCategory, inStockOnly, sortBy]);
+
+  const isScrollRestored = useRef(false);
+  
+  // Restore scroll position after loading completes
+  useEffect(() => {
+    if (!loading && !isScrollRestored.current) {
+      const savedScroll = sessionStorage.getItem("products_scroll_y");
+      if (savedScroll) {
+        const y = parseInt(savedScroll, 10);
+        setTimeout(() => {
+          window.scrollTo({ top: y, behavior: "auto" });
+        }, 50);
+      }
+      isScrollRestored.current = true;
+    }
+  }, [loading]);
+
+  // Save scroll position as user scrolls
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!loading && isScrollRestored.current) {
+        sessionStorage.setItem("products_scroll_y", window.scrollY.toString());
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [loading]);
+
+  // Scroll to top on pagination page change (skip initial render)
+  const isPageChanged = useRef(false);
+  useEffect(() => {
+    if (isPageChanged.current) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      sessionStorage.setItem("products_scroll_y", "0");
+    } else {
+      isPageChanged.current = true;
+    }
+  }, [currentPage]);
 
   // Filter and Sort logic
   const filteredProducts = dbProducts
@@ -343,14 +467,46 @@ export default function Products() {
 
               {/* Pagination Controls */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 pt-8 border-t border-brand-border">
-                  {[...Array(totalPages)].map((_, index) => {
-                    const pageNum = index + 1;
-                    return (
+                <>
+                  {/* Desktop Pagination: Width >= 1024px */}
+                  <div className="hidden lg:flex items-center justify-center gap-2 pt-8 border-t border-brand-border">
+                    {[...Array(totalPages)].map((_, index) => {
+                      const pageNum = index + 1;
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          aria-label={`Go to page ${pageNum}`}
+                          aria-current={currentPage === pageNum ? "page" : undefined}
+                          className={`w-10 h-10 rounded-full font-sans font-bold text-xs uppercase tracking-wider flex items-center justify-center transition-all duration-300 ${
+                            currentPage === pageNum
+                              ? "bg-brand-terracotta text-brand-ivory shadow-sm"
+                              : "border border-brand-border hover:border-brand-terracotta hover:text-brand-terracotta bg-transparent cursor-pointer"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Tablet Pagination: 768px <= Width < 1024px */}
+                  <div className="hidden md:flex lg:hidden items-center justify-center gap-3 pt-8 border-t border-brand-border">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      aria-label="Previous page"
+                      className="w-11 h-11 rounded-full border border-brand-border hover:border-brand-terracotta hover:text-brand-terracotta bg-transparent flex items-center justify-center transition-all duration-300 cursor-pointer disabled:opacity-40 disabled:pointer-events-none disabled:cursor-not-allowed text-brand-dark"
+                    >
+                      ←
+                    </button>
+                    {getPageRange(currentPage, totalPages, 5).map((pageNum) => (
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`w-10 h-10 rounded-full font-sans font-bold text-xs uppercase tracking-wider flex items-center justify-center transition-all duration-300 ${
+                        aria-label={`Go to page ${pageNum}`}
+                        aria-current={currentPage === pageNum ? "page" : undefined}
+                        className={`w-11 h-11 rounded-full font-sans font-bold text-xs uppercase tracking-wider flex items-center justify-center transition-all duration-300 ${
                           currentPage === pageNum
                             ? "bg-brand-terracotta text-brand-ivory shadow-sm"
                             : "border border-brand-border hover:border-brand-terracotta hover:text-brand-terracotta bg-transparent cursor-pointer"
@@ -358,9 +514,52 @@ export default function Products() {
                       >
                         {pageNum}
                       </button>
-                    );
-                  })}
-                </div>
+                    ))}
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                      aria-label="Next page"
+                      className="w-11 h-11 rounded-full border border-brand-border hover:border-brand-terracotta hover:text-brand-terracotta bg-transparent flex items-center justify-center transition-all duration-300 cursor-pointer disabled:opacity-40 disabled:pointer-events-none disabled:cursor-not-allowed text-brand-dark"
+                    >
+                      →
+                    </button>
+                  </div>
+
+                  {/* Mobile Pagination: Width < 768px */}
+                  <div className="flex md:hidden items-center justify-center gap-2 pt-8 border-t border-brand-border">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      aria-label="Previous page"
+                      className="w-11 h-11 rounded-full border border-brand-border hover:border-brand-terracotta hover:text-brand-terracotta bg-transparent flex items-center justify-center transition-all duration-300 cursor-pointer disabled:opacity-40 disabled:pointer-events-none disabled:cursor-not-allowed text-brand-dark"
+                    >
+                      ←
+                    </button>
+                    {getPageRange(currentPage, totalPages, 4).map((pageNum) => (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        aria-label={`Go to page ${pageNum}`}
+                        aria-current={currentPage === pageNum ? "page" : undefined}
+                        className={`w-11 h-11 rounded-full font-sans font-bold text-xs uppercase tracking-wider flex items-center justify-center transition-all duration-300 ${
+                          currentPage === pageNum
+                            ? "bg-brand-terracotta text-brand-ivory shadow-sm"
+                            : "border border-brand-border hover:border-brand-terracotta hover:text-brand-terracotta bg-transparent cursor-pointer"
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                      aria-label="Next page"
+                      className="w-11 h-11 rounded-full border border-brand-border hover:border-brand-terracotta hover:text-brand-terracotta bg-transparent flex items-center justify-center transition-all duration-300 cursor-pointer disabled:opacity-40 disabled:pointer-events-none disabled:cursor-not-allowed text-brand-dark"
+                    >
+                      →
+                    </button>
+                  </div>
+                </>
               )}
 
             </div>

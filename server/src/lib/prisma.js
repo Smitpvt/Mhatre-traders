@@ -1,22 +1,44 @@
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
 import { env } from '../config/env.js';
 import { logger } from '../middlewares/logging.middleware.js';
+
+const { Pool } = pg;
 
 let prisma;
 
 try {
-  console.log('Initializing Prisma Client with URL:', env.DATABASE_URL);
-  if (env.NODE_ENV === 'production') {
-    prisma = new PrismaClient();
-  } else {
-    if (!global.prisma) {
-      global.prisma = new PrismaClient();
-    }
-    prisma = global.prisma;
+  if (!globalThis.prisma) {
+    logger.info('Initializing single global Prisma Client instance with Driver Adapter...');
+    
+    const connectionString = env.DATABASE_URL;
+    const url = new URL(connectionString);
+    const connectionLimit = url.searchParams.get('connection_limit');
+    
+    // Optimize for Hostinger: default to 4 connections maximum to respect NPROC limits
+    const maxConnections = connectionLimit ? parseInt(connectionLimit, 10) : 4;
+
+    const pool = new Pool({
+      connectionString,
+      max: maxConnections,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 15000, // Allow requests to wait in queue under high concurrent load
+    });
+
+    pool.on('error', (err) => {
+      logger.error({ error: err.message }, 'Unexpected error on idle database connection client');
+    });
+
+    const adapter = new PrismaPg(pool);
+    globalThis.prisma = new PrismaClient({ adapter });
+    globalThis.prismaPool = pool;
   }
+  
+  prisma = globalThis.prisma;
 } catch (err) {
   // Catch "@prisma/client did not initialize yet" error when schema has no models (Phase 1 constraint)
-  logger.warn('Prisma Client failed to initialize (this is expected in Phase 1 when no database models are defined yet). Exporting mock proxy client.');
+  logger.warn({ error: err.message }, 'Prisma Client failed to initialize. Exporting mock proxy client.');
   
   prisma = new Proxy({}, {
     get: (target, prop) => {

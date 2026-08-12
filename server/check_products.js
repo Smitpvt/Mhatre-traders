@@ -1,7 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-
-process.env.DATABASE_URL = 'postgresql://postgres.depvvbykvsoxrjztzkzx:Mhatretraders1986@aws-0-ap-southeast-2.pooler.supabase.com:5432/postgres?connection_limit=2';
-const prisma = new PrismaClient();
+import prisma from './src/lib/prisma.js';
 
 async function checkProducts() {
   const allProducts = await prisma.product.findMany({

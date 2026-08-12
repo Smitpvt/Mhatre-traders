@@ -1,1 +1,1 @@
-import { PrismaClient } from '@prisma/client'; const prisma = new PrismaClient(); prisma.$connect().then(()=>console.log('Connected!')).catch(e=>console.error(e))
+import prisma from './src/lib/prisma.js'; prisma.$connect().then(()=>console.log('Connected!')).catch(e=>console.error(e))
