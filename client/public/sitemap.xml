@@ -1,213 +1,143 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://mhatretraders.com/</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/about</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/contact</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/products</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/categories</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/categories/steel-construction</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/categories/cement-aggregates</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/categories/pipes-fittings</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/categories/roofing</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/categories/sanitaryware-bath</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/categories/tiles-flooring</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/categories/paints-waterproofing</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/categories/hardware-fasteners</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/categories/doors-windows</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/categories/electric-materials</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/categories/tools-accessories</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/categories/decorative-interiors</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/categories/fencing-compound</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/categories/blocks-bricks</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/products/gi-chainlink-fence-wire</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/products/industrial-measuring-tape</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/products/solid-flush-wood-door</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/products/vitrified-floor-tile</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/products/everest-fibre-sheets</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/products/jaquar-alive-basin-mixer</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/products/ultima-protek-paint</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/products/astral-cpvc-pipe</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/products/polycab-copper-wire</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/products/solid-brass-aldrop</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/products/composite-cement-bag</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/products/ambuja-kawach-cement</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/products/ms-equal-angles</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/products/tiscon-tmt-rebars</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/products/aac-wall-block</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
   <url>
     <loc>https://mhatretraders.com/products/designer-t-patti</loc>
     <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
+    </url>
 </urlset>
