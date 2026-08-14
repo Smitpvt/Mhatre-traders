@@ -42,7 +42,7 @@ export default function Categories() {
   if (loading) {
     return (
       <section className="py-24 bg-brand-linen">
-        <div className="max-w-7xl mx-auto px-8 lg:px-9 flex justify-center py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center py-10">
           <div className="w-full h-48 bg-brand-border/20 rounded-3xl animate-pulse" />
         </div>
       </section>
@@ -52,7 +52,7 @@ export default function Categories() {
   if (error) {
     return (
       <section className="py-24 bg-brand-linen">
-        <div className="max-w-7xl mx-auto px-8 lg:px-9 text-center py-12 border border-brand-border/40 rounded-3xl bg-[#FCFBF8] space-y-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-12 border border-brand-border/40 rounded-3xl bg-[#FCFBF8] space-y-4">
           <p className="text-brand-muted text-sm font-light">Failed to load material divisions.</p>
           <button
             onClick={loadCategories}
@@ -77,7 +77,7 @@ export default function Categories() {
 
   return (
     <section className="py-24 bg-brand-linen">
-      <div className="max-w-7xl mx-auto px-8 lg:px-9">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 pb-4 border-b border-brand-border/40">

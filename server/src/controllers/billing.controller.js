@@ -139,7 +139,7 @@ export const createBill = asyncHandler(async (req, res, next) => {
     let calculatedGstAmount = 0;
 
     for (const item of items) {
-      const { productId, quantity, unitPrice, discount: itemDiscount, gstRate } = item;
+      const { productId, size, quantity, unitPrice, discount: itemDiscount, gstRate } = item;
       
       const product = productMap.get(productId);
 
@@ -161,25 +161,29 @@ export const createBill = asyncHandler(async (req, res, next) => {
       const originalGstRate = gstRate !== undefined ? parseFloat(gstRate) : parseFloat(product.pricing.gstRate || 0);
       const defaultRate = parseFloat(product.pricing.defaultBillingRate || 0);
       const chosenRate = unitPrice !== undefined ? parseFloat(unitPrice) : defaultRate;
-      const lineDisc = itemDiscount ? parseFloat(itemDiscount) : 0;
+
+      // Calculate discount amount from percentage
+      const discPercent = itemDiscount ? parseFloat(itemDiscount) : 0;
+      const grossAmount = chosenRate * qtyVal;
+      const lineDisc = grossAmount * (discPercent / 100);
 
       let lineSubtotal = 0;
       let lineGst = 0;
       let lineTotal = 0;
 
       if (billType === 'NON_GST') {
-        lineSubtotal = (chosenRate * qtyVal) - lineDisc;
+        lineSubtotal = grossAmount - lineDisc;
         lineGst = 0;
         lineTotal = lineSubtotal;
       } else {
         // GST Invoice calculations
         if (gstCalculationMode === 'INCLUSIVE') {
-          lineTotal = (chosenRate * qtyVal) - lineDisc;
+          lineTotal = grossAmount - lineDisc;
           lineSubtotal = lineTotal / (1 + (originalGstRate / 100));
           lineGst = lineTotal - lineSubtotal;
         } else {
           // EXCLUSIVE mode
-          lineSubtotal = (chosenRate * qtyVal) - lineDisc;
+          lineSubtotal = grossAmount - lineDisc;
           lineGst = lineSubtotal * (originalGstRate / 100);
           lineTotal = lineSubtotal + lineGst;
         }
@@ -188,9 +192,13 @@ export const createBill = asyncHandler(async (req, res, next) => {
       calculatedSubtotal += lineSubtotal;
       calculatedGstAmount += lineGst;
 
+      const formattedProductName = size && size.trim() !== '' 
+        ? `${product.name} (${size.trim()})` 
+        : product.name;
+
       billItemsData.push({
         productId,
-        productName: product.name,
+        productName: formattedProductName,
         sku: product.sku,
         hsnCode: product.pricing.hsnCode || '',
         unit: product.unit,
@@ -263,8 +271,8 @@ export const createBill = asyncHandler(async (req, res, next) => {
 
     return bill;
   }, {
-    maxWait: 10000, // wait up to 10 seconds for a connection
-    timeout: 30000  // allow up to 30 seconds for the transaction to complete
+    maxWait: 10000,
+    timeout: 30000
   });
 
   if (sendEmail && customerEmail) {

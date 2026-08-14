@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Home, Building2, Factory, Shield, Users, Map, ArrowRight } from "lucide-react";
+import { Home, Building2, Factory } from "lucide-react";
 
 export default function Industries() {
   const sectors = [
@@ -9,36 +9,27 @@ export default function Industries() {
       subtitle: "HOMES • VILLAS • RENOVATIONS",
       image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200&auto=format&fit=crop",
       mainIcon: Home,
-      iconColor: "bg-[#A66D44]", // Terracotta
-      footerIcon: Shield,
-      footerIconColor: "bg-[#F3EFE9] text-[#A66D44]",
-      footerText: "Building stronger, more beautiful homes that last."
+      iconColor: "bg-[#A66D44]" // Terracotta
     },
     {
       title: "Commercial Projects",
       subtitle: "OFFICES • HOTELS • RETAIL • INSTITUTIONS",
       image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop",
       mainIcon: Building2,
-      iconColor: "bg-[#334658]", // Slate Blue
-      footerIcon: Users,
-      footerIconColor: "bg-[#EAEFF3] text-[#334658]",
-      footerText: "Empowering businesses with reliable and consistent quality."
+      iconColor: "bg-[#334658]" // Slate Blue
     },
     {
       title: "Infrastructure & Industrial",
       subtitle: "FACTORIES • WAREHOUSES • CIVIL PROJECTS",
       image: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?q=80&w=1200&auto=format&fit=crop",
       mainIcon: Factory,
-      iconColor: "bg-[#657945]", // Olive Green
-      footerIcon: Map,
-      footerIconColor: "bg-[#EEF2E8] text-[#657945]",
-      footerText: "Strengthening infrastructure for a better tomorrow."
+      iconColor: "bg-[#657945]" // Olive Green
     }
   ];
 
   return (
     <section className="py-24 bg-[#FAF9F6]">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
@@ -91,26 +82,13 @@ export default function Industries() {
               </div>
 
               {/* Title Section (Dark) */}
-              <div className="bg-[#161616] text-center pt-14 pb-8 px-6 relative z-0 flex-1">
-                <h3 className="font-headings font-semibold text-2xl text-white mb-3">
+              <div className="bg-[#161616] text-center pt-14 pb-12 px-6 relative z-0 flex-1 flex flex-col justify-center transition-colors duration-500 group-hover:bg-[#111]">
+                <h3 className="font-headings font-semibold text-2xl text-white mb-3 group-hover:text-[#A66D44] transition-colors duration-300">
                   {sec.title}
                 </h3>
                 <p className="text-[10px] text-white/70 font-sans font-medium tracking-[0.15em] uppercase">
                   {sec.subtitle}
                 </p>
-              </div>
-
-              {/* Footer Section (Light) */}
-              <div className="bg-white p-6 flex flex-col justify-between gap-4 border-t border-[#EBEBEB] min-h-[120px]">
-                <div className="flex items-center gap-5">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${sec.footerIconColor}`}>
-                    <sec.footerIcon className="w-5 h-5" strokeWidth={1.5} />
-                  </div>
-                  <p className="text-[13px] leading-snug text-[#4A4A48] flex-1 font-medium pr-2">
-                    {sec.footerText}
-                  </p>
-                  <ArrowRight className="w-5 h-5 text-[#888888] shrink-0 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-[#A66D44]" strokeWidth={1.5} />
-                </div>
               </div>
 
             </motion.div>

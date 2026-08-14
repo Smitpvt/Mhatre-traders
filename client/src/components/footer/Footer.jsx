@@ -25,7 +25,7 @@ export default function Footer() {
 
   return (
     <footer className="bg-[#F5F2EB] text-brand-dark pt-12 border-t border-brand-border font-sans">
-      <div className="max-w-7xl mx-auto px-8 lg:px-9 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 pb-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 pb-6">
         
         {/* Column 1: Brand Info */}
         <div className="space-y-3 text-left">
@@ -121,7 +121,7 @@ export default function Footer() {
 
       {/* Footer Bottom */}
       <div className="bg-[#EBE6DC] border-t border-brand-border/40 py-4 mt-1">
-        <div className="max-w-7xl mx-auto px-8 lg:px-9 flex flex-col sm:flex-row justify-center items-center text-[11px] text-brand-muted gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-center items-center text-[11px] text-brand-muted gap-4">
           <div>
             &copy; {currentYear} Mhatre Traders. All Rights Reserved.
           </div>

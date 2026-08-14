@@ -57,7 +57,7 @@ export default function FeaturedProducts() {
   if (loading) {
     return (
       <section className="pt-14 pb-16 bg-white border-y border-brand-border/40">
-        <div className="max-w-7xl mx-auto px-8 lg:px-9 flex justify-center py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center py-10">
           <div className="w-full h-64 bg-brand-border/10 rounded-3xl animate-pulse" />
         </div>
       </section>
@@ -67,7 +67,7 @@ export default function FeaturedProducts() {
   if (error) {
     return (
       <section className="pt-14 pb-16 bg-white border-y border-brand-border/40">
-        <div className="max-w-7xl mx-auto px-8 lg:px-9 text-center py-12 border border-brand-border/40 rounded-3xl bg-[#FCFBF8] space-y-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-12 border border-brand-border/40 rounded-3xl bg-[#FCFBF8] space-y-4">
           <p className="text-brand-muted text-sm font-light">Failed to load featured products.</p>
           <button
             onClick={loadFeatured}
@@ -86,7 +86,7 @@ export default function FeaturedProducts() {
 
   return (
     <section className="pt-14 pb-16 bg-white border-y border-brand-border/40">
-      <div className="max-w-7xl mx-auto px-8 lg:px-9">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 pb-4 border-b border-brand-border/40">

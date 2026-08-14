@@ -77,22 +77,22 @@ export default function Navbar() {
     <>
       {/* Floating Rounded Navbar */}
       <header
-        className={`fixed left-1/2 -translate-x-1/2 w-[92%] max-w-7xl z-50 transition-all duration-500 ${
+        className={`fixed left-1/2 -translate-x-1/2 w-[95%] sm:w-[92%] max-w-7xl z-50 transition-all duration-500 ${
           isScrolled
-            ? "top-4 bg-white/95 backdrop-blur-md shadow-sm py-3 px-8 border border-brand-border/30 rounded-full"
-            : "top-6 bg-white shadow-sm py-4.5 px-9 border border-brand-border/20 rounded-full"
+            ? "top-3 sm:top-4 bg-white/95 backdrop-blur-md shadow-sm py-2 sm:py-3 px-3.5 sm:px-6 md:px-8 border border-brand-border/30 rounded-full"
+            : "top-3.5 sm:top-6 bg-white shadow-sm py-2.5 sm:py-4.5 px-4 sm:px-6 md:px-9 border border-brand-border/20 rounded-full"
         }`}
       >
         <div className="flex items-center justify-between w-full">
           {/* Left Column: Branding */}
           <div className="flex-1 flex justify-start items-center">
-            <Link to="/" className="flex items-center gap-4 group shrink-0">
+            <Link to="/" className="flex items-center gap-2 sm:gap-4 group shrink-0">
               <img
                 src="/logo-Photoroom.png"
                 alt="Mhatre Traders Logo"
-                className="h-[40px] w-[40px] md:h-[46px] md:w-[46px] lg:h-[52px] lg:w-[52px] object-contain flex-shrink-0"
+                className="h-[32px] w-[32px] sm:h-[40px] sm:w-[40px] md:h-[46px] md:w-[46px] lg:h-[52px] lg:w-[52px] object-contain flex-shrink-0"
               />
-              <span className="font-headings font-bold text-[18px] md:text-[20px] leading-none text-brand-dark whitespace-nowrap">
+              <span className="font-headings font-bold text-[15px] sm:text-[18px] md:text-[20px] leading-none text-brand-dark whitespace-nowrap">
                 Mhatre <span className="text-brand-terracotta">Traders</span>
               </span>
             </Link>

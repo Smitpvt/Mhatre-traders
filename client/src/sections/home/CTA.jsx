@@ -43,7 +43,7 @@ export default function CTA() {
 
   return (
     <section className="py-16 md:py-18 bg-brand-linen border-b border-brand-border/40">
-      <div className="max-w-7xl mx-auto px-8 lg:px-9">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Enquiry Section: Two-Column Consultation Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">

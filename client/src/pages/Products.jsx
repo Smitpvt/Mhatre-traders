@@ -10,13 +10,10 @@ import { categories as localCategories } from "../data/categories.js";
 
 const ITEMS_PER_PAGE = 9;
 
-const getPageRange = (currentPage, totalPages, maxVisible) => {
-  let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+const getSlidingPageRange = (windowStart, totalPages, maxVisible) => {
+  let start = Math.max(1, Math.min(totalPages - maxVisible + 1, windowStart));
+  if (isNaN(start) || start < 1) start = 1;
   let end = Math.min(totalPages, start + maxVisible - 1);
-
-  if (end - start + 1 < maxVisible) {
-    start = Math.max(1, end - maxVisible + 1);
-  }
 
   const pages = [];
   for (let i = start; i <= end; i++) {
@@ -64,6 +61,7 @@ export default function Products() {
     if (urlPage) return parseInt(urlPage, 10);
     return savedState.currentPage || 1;
   });
+  const [windowStart, setWindowStart] = useState(1);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   const fetchCatalog = async () => {
@@ -194,17 +192,6 @@ export default function Products() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [loading]);
 
-  // Scroll to top on pagination page change (skip initial render)
-  const isPageChanged = useRef(false);
-  useEffect(() => {
-    if (isPageChanged.current) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      sessionStorage.setItem("products_scroll_y", "0");
-    } else {
-      isPageChanged.current = true;
-    }
-  }, [currentPage]);
-
   // Filter and Sort logic
   const filteredProducts = dbProducts
     .filter((product) => {
@@ -233,6 +220,27 @@ export default function Products() {
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedProducts = filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  // Sync sliding pagination window start with currentPage and totalPages
+  useEffect(() => {
+    setWindowStart((prev) => {
+      if (prev > totalPages) return Math.max(1, totalPages - 3);
+      if (currentPage < prev) return currentPage;
+      if (currentPage >= prev + 4) return Math.max(1, currentPage - 3);
+      return prev;
+    });
+  }, [currentPage, totalPages]);
+
+  // Scroll to top on pagination page change (skip initial render)
+  const isPageChanged = useRef(false);
+  useEffect(() => {
+    if (isPageChanged.current) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      sessionStorage.setItem("products_scroll_y", "0");
+    } else {
+      isPageChanged.current = true;
+    }
+  }, [currentPage]);
 
   // Group products by category
   const groupedProducts = paginatedProducts.reduce((acc, product) => {
@@ -285,7 +293,7 @@ export default function Products() {
       {/* Editorial grid lines */}
       <div className="absolute inset-0 editorial-grid opacity-30 pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Page Header */}
         <div className="border-b border-brand-border pb-8 mb-8">
@@ -469,38 +477,51 @@ export default function Products() {
               {totalPages > 1 && (
                 <>
                   {/* Desktop Pagination: Width >= 1024px */}
-                  <div className="hidden lg:flex items-center justify-center gap-2 pt-8 border-t border-brand-border">
-                    {[...Array(totalPages)].map((_, index) => {
-                      const pageNum = index + 1;
-                      return (
-                        <button
-                          key={pageNum}
-                          onClick={() => setCurrentPage(pageNum)}
-                          aria-label={`Go to page ${pageNum}`}
-                          aria-current={currentPage === pageNum ? "page" : undefined}
-                          className={`w-10 h-10 rounded-full font-sans font-bold text-xs uppercase tracking-wider flex items-center justify-center transition-all duration-300 ${
-                            currentPage === pageNum
-                              ? "bg-brand-terracotta text-brand-ivory shadow-sm"
-                              : "border border-brand-border hover:border-brand-terracotta hover:text-brand-terracotta bg-transparent cursor-pointer"
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    })}
+                  <div className="hidden lg:flex items-center justify-center gap-3 pt-8 border-t border-brand-border">
+                    <button
+                      onClick={() => setWindowStart(prev => Math.max(1, prev - 1))}
+                      disabled={windowStart <= 1}
+                      aria-label="Previous range"
+                      className="w-10 h-10 rounded-full border border-brand-border hover:border-brand-terracotta hover:text-brand-terracotta bg-transparent flex items-center justify-center transition-all duration-300 cursor-pointer disabled:opacity-40 disabled:pointer-events-none disabled:cursor-not-allowed text-brand-dark"
+                    >
+                      ←
+                    </button>
+                    {getSlidingPageRange(windowStart, totalPages, 7).map((pageNum) => (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        aria-label={`Go to page ${pageNum}`}
+                        aria-current={currentPage === pageNum ? "page" : undefined}
+                        className={`w-10 h-10 rounded-full font-sans font-bold text-xs uppercase tracking-wider flex items-center justify-center transition-all duration-300 ${
+                          currentPage === pageNum
+                            ? "bg-brand-terracotta text-brand-ivory shadow-sm"
+                            : "border border-brand-border hover:border-brand-terracotta hover:text-brand-terracotta bg-transparent cursor-pointer"
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setWindowStart(prev => Math.min(Math.max(1, totalPages - 7 + 1), prev + 1))}
+                      disabled={windowStart + 7 - 1 >= totalPages}
+                      aria-label="Next range"
+                      className="w-10 h-10 rounded-full border border-brand-border hover:border-brand-terracotta hover:text-brand-terracotta bg-transparent flex items-center justify-center transition-all duration-300 cursor-pointer disabled:opacity-40 disabled:pointer-events-none disabled:cursor-not-allowed text-brand-dark"
+                    >
+                      →
+                    </button>
                   </div>
 
                   {/* Tablet Pagination: 768px <= Width < 1024px */}
                   <div className="hidden md:flex lg:hidden items-center justify-center gap-3 pt-8 border-t border-brand-border">
                     <button
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                      disabled={currentPage === 1}
-                      aria-label="Previous page"
+                      onClick={() => setWindowStart(prev => Math.max(1, prev - 1))}
+                      disabled={windowStart <= 1}
+                      aria-label="Previous range"
                       className="w-11 h-11 rounded-full border border-brand-border hover:border-brand-terracotta hover:text-brand-terracotta bg-transparent flex items-center justify-center transition-all duration-300 cursor-pointer disabled:opacity-40 disabled:pointer-events-none disabled:cursor-not-allowed text-brand-dark"
                     >
                       ←
                     </button>
-                    {getPageRange(currentPage, totalPages, 5).map((pageNum) => (
+                    {getSlidingPageRange(windowStart, totalPages, 5).map((pageNum) => (
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
@@ -516,9 +537,9 @@ export default function Products() {
                       </button>
                     ))}
                     <button
-                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                      disabled={currentPage === totalPages}
-                      aria-label="Next page"
+                      onClick={() => setWindowStart(prev => Math.min(Math.max(1, totalPages - 5 + 1), prev + 1))}
+                      disabled={windowStart + 5 - 1 >= totalPages}
+                      aria-label="Next range"
                       className="w-11 h-11 rounded-full border border-brand-border hover:border-brand-terracotta hover:text-brand-terracotta bg-transparent flex items-center justify-center transition-all duration-300 cursor-pointer disabled:opacity-40 disabled:pointer-events-none disabled:cursor-not-allowed text-brand-dark"
                     >
                       →
@@ -528,14 +549,14 @@ export default function Products() {
                   {/* Mobile Pagination: Width < 768px */}
                   <div className="flex md:hidden items-center justify-center gap-2 pt-8 border-t border-brand-border">
                     <button
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                      disabled={currentPage === 1}
-                      aria-label="Previous page"
+                      onClick={() => setWindowStart(prev => Math.max(1, prev - 1))}
+                      disabled={windowStart <= 1}
+                      aria-label="Previous range"
                       className="w-11 h-11 rounded-full border border-brand-border hover:border-brand-terracotta hover:text-brand-terracotta bg-transparent flex items-center justify-center transition-all duration-300 cursor-pointer disabled:opacity-40 disabled:pointer-events-none disabled:cursor-not-allowed text-brand-dark"
                     >
                       ←
                     </button>
-                    {getPageRange(currentPage, totalPages, 4).map((pageNum) => (
+                    {getSlidingPageRange(windowStart, totalPages, 4).map((pageNum) => (
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
@@ -551,9 +572,9 @@ export default function Products() {
                       </button>
                     ))}
                     <button
-                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                      disabled={currentPage === totalPages}
-                      aria-label="Next page"
+                      onClick={() => setWindowStart(prev => Math.min(Math.max(1, totalPages - 4 + 1), prev + 1))}
+                      disabled={windowStart + 4 - 1 >= totalPages}
+                      aria-label="Next range"
                       className="w-11 h-11 rounded-full border border-brand-border hover:border-brand-terracotta hover:text-brand-terracotta bg-transparent flex items-center justify-center transition-all duration-300 cursor-pointer disabled:opacity-40 disabled:pointer-events-none disabled:cursor-not-allowed text-brand-dark"
                     >
                       →
