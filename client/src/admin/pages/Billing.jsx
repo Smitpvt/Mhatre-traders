@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiPlus, FiSearch, FiFileText, FiDownload, FiTrash2, FiX, FiRefreshCw, FiDollarSign } from 'react-icons/fi';
+import { FiPlus, FiSearch, FiFileText, FiDownload, FiTrash2, FiX, FiRefreshCw, FiDollarSign, FiChevronDown } from 'react-icons/fi';
 import api from '../services/api.js';
 import { BASE_URL } from '../../config/api.js';
 import adminToast from '../utils/toast.js';
@@ -12,6 +12,9 @@ export const Billing = () => {
   const [categoriesList, setCategoriesList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState(''); // '', 'PAID', 'PARTIAL', 'PENDING'
+  const [excelMode, setExcelMode] = useState(() => localStorage.getItem('excelExportMode') || 'master'); // 'master' or 'new'
+  const [showExcelDropdown, setShowExcelDropdown] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -44,7 +47,11 @@ export const Billing = () => {
   const fetchBills = async () => {
     setLoading(true);
     try {
-      const res = await api.get(`/admin/billing?search=${search}&page=${page}&limit=8`);
+      let url = `/admin/billing?search=${encodeURIComponent(search)}&page=${page}&limit=8`;
+      if (statusFilter) {
+        url += `&paymentStatus=${statusFilter}`;
+      }
+      const res = await api.get(url);
       if (res.success && res.data) {
         setBills(res.data.bills);
         setTotalPages(res.data.meta.totalPages || 1);
@@ -91,7 +98,48 @@ export const Billing = () => {
     }, 450);
 
     return () => clearTimeout(delayDebounce);
-  }, [search, page]);
+  }, [search, page, statusFilter]);
+
+  // Handle Excel Ledger Export (Master or New Sheet mode)
+  const handleDownloadExcel = async (overrideMode) => {
+    const targetMode = overrideMode || excelMode;
+    setExcelMode(targetMode);
+    localStorage.setItem('excelExportMode', targetMode);
+
+    const modeLabel = targetMode === 'new' ? 'New Excel Sheet (Active Only)' : 'Master Excel Sheet (All Bills)';
+    adminToast.info(`Preparing ${modeLabel}...`);
+    try {
+      const token = localStorage.getItem('token');
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const response = await fetch(`${BASE_URL}/admin/billing/export-excel?mode=${targetMode}`, {
+        method: 'GET',
+        headers,
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to export Excel ledger: ${response.statusText}`);
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const fileName = targetMode === 'new'
+        ? `Mhatre_Traders_New_Bills_Ledger_${new Date().toISOString().split('T')[0]}.xlsx`
+        : `Mhatre_Traders_Master_Bills_Ledger_${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      adminToast.success(`${modeLabel} downloaded successfully`);
+    } catch (err) {
+      console.error(err);
+      adminToast.error('Failed to download Excel ledger');
+    }
+  };
 
   // Handle invoice downloads
   const handleDownloadPdf = async (billId, invoiceNo) => {
@@ -147,7 +195,7 @@ export const Billing = () => {
       });
       if (res.success) {
         adminToast.success(`Payment status set to ${newStatus}`);
-        setBills(bills.map(b => b.id === billId ? { ...b, paymentStatus: newStatus } : b));
+        fetchBills();
       }
     } catch (err) {
       adminToast.error(err.message || 'Failed to update payment status');
@@ -401,30 +449,147 @@ export const Billing = () => {
           <h1 className="font-headings text-2xl font-bold">Billing & Invoicing</h1>
           <p className="text-xs text-[#676767]">Compile invoices and track customer transactions</p>
         </div>
-        <button
-          onClick={openCreatorModal}
-          className="self-start sm:self-center flex items-center gap-2 bg-[#B56A45] hover:bg-[#A05C39] text-[#FFFFFF] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors cursor-pointer shadow-xs"
-        >
-          <FiPlus className="w-4 h-4" />
-          <span>New Invoice</span>
-        </button>
+        <div className="flex items-center gap-3 self-start sm:self-center">
+          {/* Export Excel Dropdown */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowExcelDropdown(!showExcelDropdown)}
+              className="flex items-center gap-2 bg-[#FFFFFF] hover:bg-emerald-50 text-emerald-700 border border-emerald-300 text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors cursor-pointer shadow-2xs"
+              title="Download Excel Sheet Options"
+            >
+              <FiDownload className="w-4 h-4" />
+              <span>{excelMode === 'new' ? 'Export New Sheet' : 'Export Excel'}</span>
+              <FiChevronDown className={`w-3.5 h-3.5 transition-transform ${showExcelDropdown ? 'rotate-180' : ''}`} />
+            </button>
+
+            {showExcelDropdown && (
+              <div 
+                className="absolute right-0 mt-2 w-72 bg-[#FFFFFF] border border-[#ECE7DF] rounded-xl shadow-xl z-50 py-1.5 text-xs font-sans"
+                onMouseLeave={() => setShowExcelDropdown(false)}
+              >
+                <div className="px-3.5 py-2 text-[10px] font-bold uppercase tracking-wider text-zinc-400 border-b border-[#ECE7DF]">
+                  Select Export Option
+                </div>
+                
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleDownloadExcel('new');
+                    setShowExcelDropdown(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 hover:bg-emerald-50 flex flex-col transition-colors cursor-pointer ${
+                    excelMode === 'new' ? 'bg-emerald-50/70 border-l-4 border-emerald-600' : ''
+                  }`}
+                >
+                  <span className="font-bold text-emerald-800 flex items-center justify-between">
+                    <span>🆕 New Excel Sheet (Active Only)</span>
+                    {excelMode === 'new' && <span className="text-[9px] bg-emerald-200 text-emerald-800 px-1.5 py-0.5 rounded font-semibold">Selected</span>}
+                  </span>
+                  <span className="text-[11px] text-zinc-500 mt-0.5">Exports active bills only into a fresh spreadsheet</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleDownloadExcel('master');
+                    setShowExcelDropdown(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 hover:bg-zinc-50 flex flex-col transition-colors cursor-pointer border-t border-[#ECE7DF] ${
+                    excelMode === 'master' ? 'bg-zinc-100 border-l-4 border-zinc-700' : ''
+                  }`}
+                >
+                  <span className="font-bold text-zinc-800 flex items-center justify-between">
+                    <span>📊 Master Excel Sheet (All Records)</span>
+                    {excelMode === 'master' && <span className="text-[9px] bg-zinc-200 text-zinc-800 px-1.5 py-0.5 rounded font-semibold">Selected</span>}
+                  </span>
+                  <span className="text-[11px] text-zinc-500 mt-0.5">Includes full historical ledger & retained records</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={openCreatorModal}
+            className="flex items-center gap-2 bg-[#B56A45] hover:bg-[#A05C39] text-[#FFFFFF] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors cursor-pointer shadow-xs"
+          >
+            <FiPlus className="w-4 h-4" />
+            <span>New Invoice</span>
+          </button>
+        </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex items-center bg-[#FFFFFF] border border-[#ECE7DF] px-4 py-2.5 rounded-xl max-w-md w-full text-sm">
-        <FiSearch className="text-zinc-400 mr-2 flex-shrink-0" />
-        <input
-          type="text"
-          placeholder="Search by Invoice number, Client name, phone..."
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="bg-transparent border-0 focus:outline-hidden focus:ring-0 w-full"
-        />
-        {search && (
-          <button onClick={() => setSearch('')} className="text-zinc-400 hover:text-zinc-600">
-            <FiX className="w-4 h-4" />
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center bg-[#FFFFFF] border border-[#ECE7DF] px-4 py-2.5 rounded-xl max-w-md w-full text-sm shadow-2xs">
+          <FiSearch className="text-zinc-400 mr-2 flex-shrink-0" />
+          <input
+            type="text"
+            placeholder="Search by Invoice number, Client name, phone..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            className="bg-transparent border-0 focus:outline-hidden focus:ring-0 w-full"
+          />
+          {search && (
+            <button onClick={() => setSearch('')} className="text-zinc-400 hover:text-zinc-600">
+              <FiX className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Payment Status Filter Buttons */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => { setStatusFilter(''); setPage(1); }}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+              statusFilter === ''
+                ? 'bg-[#1E1E1B] text-[#FFFFFF] border-[#1E1E1B] shadow-xs'
+                : 'bg-[#FFFFFF] text-zinc-600 border-[#ECE7DF] hover:bg-[#FCFBF8]'
+            }`}
+          >
+            All Bills
           </button>
-        )}
+          
+          <button
+            type="button"
+            onClick={() => { setStatusFilter('PAID'); setPage(1); }}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center gap-1.5 ${
+              statusFilter === 'PAID'
+                ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+            }`}
+          >
+            <span className={`w-2 h-2 rounded-full ${statusFilter === 'PAID' ? 'bg-white' : 'bg-emerald-500'}`}></span>
+            Paid Bills
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { setStatusFilter('PARTIAL'); setPage(1); }}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center gap-1.5 ${
+              statusFilter === 'PARTIAL'
+                ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
+                : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+            }`}
+          >
+            <span className={`w-2 h-2 rounded-full ${statusFilter === 'PARTIAL' ? 'bg-white' : 'bg-amber-500'}`}></span>
+            Partial Payment
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { setStatusFilter('PENDING'); setPage(1); }}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center gap-1.5 ${
+              statusFilter === 'PENDING'
+                ? 'bg-red-600 text-white border-red-600 shadow-xs'
+                : 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
+            }`}
+          >
+            <span className={`w-2 h-2 rounded-full ${statusFilter === 'PENDING' ? 'bg-white' : 'bg-red-500'}`}></span>
+            Pending
+          </button>
+        </div>
       </div>
 
       {/* Invoice Ledger Table */}
@@ -432,7 +597,11 @@ export const Billing = () => {
         <TableSkeleton rows={5} cols={7} />
       ) : bills.length === 0 ? (
         <div className="bg-[#FFFFFF] border border-[#ECE7DF] rounded-xl p-12 text-center text-zinc-400 text-sm">
-          No invoices registered. Click "New Invoice" to checkout a sale.
+          {statusFilter
+            ? `No ${statusFilter.toLowerCase()} bills found.`
+            : search
+            ? `No invoices matching "${search}".`
+            : 'No invoices registered. Click "New Invoice" to checkout a sale.'}
         </div>
       ) : (
         <div className="bg-[#FFFFFF] border border-[#ECE7DF] rounded-xl overflow-hidden shadow-xs text-sm">
@@ -784,17 +953,6 @@ export const Billing = () => {
                           value={item.size || ''}
                           onChange={(e) => handleItemFieldChange(idx, 'size', e.target.value)}
                           className="w-full px-2 py-1.5 bg-[#FFFFFF] border border-[#ECE7DF] rounded-lg text-xs focus:outline-hidden text-center font-medium"
-                        />
-                      </div>
-
-                      {/* Display Unit */}
-                      <div className="w-20 space-y-1">
-                        <label className="text-[9px] font-bold uppercase text-zinc-500">Unit</label>
-                        <input
-                          type="text"
-                          disabled
-                          value={item.unit || '-'}
-                          className="w-full px-2 py-1.5 bg-zinc-100 border border-[#ECE7DF] rounded-lg text-xs text-zinc-400 text-center"
                         />
                       </div>
 

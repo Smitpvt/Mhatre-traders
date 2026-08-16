@@ -4,6 +4,7 @@ import { ApiError } from '../utils/apiError.js';
 import { ApiResponse } from '../utils/apiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import PDFDocument from 'pdfkit';
+import ExcelJS from 'exceljs';
 
 export const getBills = asyncHandler(async (req, res, next) => {
   const { search, paymentStatus, billType, page = 1, limit = 10 } = req.query;
@@ -514,23 +515,149 @@ export const getBillPdf = asyncHandler(async (req, res, next) => {
   res.send(pdfBuffer);
 });
 
+export const exportBillsExcel = asyncHandler(async (req, res, next) => {
+  const { mode = 'master', includeDeleted } = req.query;
+
+  // mode === 'new' or includeDeleted === 'false' => Active bills only (New Sheet Mode)
+  // mode === 'master' or includeDeleted === 'true' => All bills (Master Sheet with soft-deleted history)
+  const isNewSheetMode = mode === 'new' || includeDeleted === 'false';
+  const whereClause = isNewSheetMode ? { deletedAt: null } : {};
+
+  const bills = await prisma.bill.findMany({
+    where: whereClause,
+    include: {
+      user: { select: { name: true } },
+      items: true
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  const sheetTitle = isNewSheetMode ? 'New Active Bills Ledger' : 'Master Bills Ledger';
+  const fileNamePrefix = isNewSheetMode ? 'Mhatre_Traders_New_Bills_Ledger' : 'Mhatre_Traders_Master_Bills_Ledger';
+
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'Mhatre Traders Billing System';
+  workbook.created = new Date();
+
+  const worksheet = workbook.addWorksheet(sheetTitle, {
+    views: [{ showGridLines: true }]
+  });
+
+  // Define Columns
+  worksheet.columns = [
+    { header: 'Invoice No', key: 'invoiceNumber', width: 18 },
+    { header: 'Invoice Date', key: 'createdAt', width: 16 },
+    { header: 'Customer Name', key: 'customerName', width: 24 },
+    { header: 'Customer Phone', key: 'customerPhone', width: 16 },
+    { header: 'Customer Email', key: 'customerEmail', width: 24 },
+    { header: 'Bill Type', key: 'billType', width: 12 },
+    { header: 'Payment Mode', key: 'paymentMode', width: 16 },
+    { header: 'Payment Status', key: 'paymentStatus', width: 16 },
+    { header: 'Subtotal (₹)', key: 'subtotal', width: 14 },
+    { header: 'Discount (₹)', key: 'discount', width: 14 },
+    { header: 'GST Amount (₹)', key: 'gstAmount', width: 14 },
+    { header: 'Grand Total (₹)', key: 'grandTotal', width: 16 },
+    { header: 'Items Purchased', key: 'itemsSummary', width: 45 },
+    { header: 'Billed By', key: 'userName', width: 20 }
+  ];
+
+  // Header row styling
+  const headerRow = worksheet.getRow(1);
+  headerRow.height = 28;
+  headerRow.eachCell((cell) => {
+    cell.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFB56A45' } // Brand color accent
+    };
+    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+  });
+
+  let grandTotalSum = 0;
+
+  // Add bill rows (all records formatted standard and uniform)
+  bills.forEach((bill) => {
+    const itemsSummary = bill.items
+      ? bill.items.map(i => `${i.productName} (x${i.quantity} @ ₹${parseFloat(i.unitPrice).toFixed(2)})`).join(', ')
+      : '';
+
+    const subtotalVal = parseFloat(bill.subtotal || 0);
+    const discountVal = parseFloat(bill.discount || 0);
+    const gstVal = parseFloat(bill.gstAmount || 0);
+    const grandTotalVal = parseFloat(bill.grandTotal || 0);
+
+    grandTotalSum += grandTotalVal;
+
+    const row = worksheet.addRow({
+      invoiceNumber: bill.invoiceNumber,
+      createdAt: new Date(bill.createdAt).toLocaleDateString('en-IN'),
+      customerName: bill.customerName,
+      customerPhone: bill.customerPhone,
+      customerEmail: bill.customerEmail || '-',
+      billType: bill.billType,
+      paymentMode: bill.paymentMode,
+      paymentStatus: bill.paymentStatus,
+      subtotal: subtotalVal,
+      discount: discountVal,
+      gstAmount: gstVal,
+      grandTotal: grandTotalVal,
+      itemsSummary,
+      userName: bill.user?.name || 'Admin'
+    });
+
+    row.height = 22;
+    row.alignment = { vertical: 'middle' };
+
+    // Format number columns
+    row.getCell('subtotal').numberFormat = '₹#,##0.00';
+    row.getCell('discount').numberFormat = '₹#,##0.00';
+    row.getCell('gstAmount').numberFormat = '₹#,##0.00';
+    row.getCell('grandTotal').numberFormat = '₹#,##0.00';
+  });
+
+  // Summary footer row
+  worksheet.addRow({});
+  const totalRow = worksheet.addRow({
+    invoiceNumber: 'GRAND TOTAL',
+    grandTotal: grandTotalSum
+  });
+  totalRow.height = 24;
+  totalRow.getCell('invoiceNumber').font = { bold: true };
+  totalRow.getCell('grandTotal').font = { bold: true, color: { argb: 'FFB56A45' } };
+  totalRow.getCell('grandTotal').numberFormat = '₹#,##0.00';
+
+  res.setHeader(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  );
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename=${fileNamePrefix}_${new Date().toISOString().split('T')[0]}.xlsx`
+  );
+
+  await workbook.xlsx.write(res);
+  res.end();
+});
+
 export const deleteBill = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
-  const bill = await prisma.bill.findUnique({
-    where: { id }
+  const bill = await prisma.bill.findFirst({
+    where: { id, deletedAt: null }
   });
 
   if (!bill) {
     return next(new ApiError(404, 'Invoice not found'));
   }
 
-  // Hard delete from database
-  await prisma.bill.delete({
-    where: { id }
+  // Soft delete from database so historical Excel export retains the deleted records
+  await prisma.bill.update({
+    where: { id },
+    data: { deletedAt: new Date() }
   });
 
   res.status(200).json(
-    new ApiResponse(200, null, 'Invoice deleted successfully from the database')
+    new ApiResponse('Invoice deleted successfully', null)
   );
 });

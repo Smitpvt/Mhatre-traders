@@ -5,7 +5,8 @@ import {
   createBill, 
   updatePaymentStatus, 
   getBillPdf,
-  deleteBill
+  deleteBill,
+  exportBillsExcel
 } from '../../../controllers/billing.controller.js';
 import { protect } from '../../../middlewares/auth.middleware.js';
 import { validateRequest } from '../../../middlewares/validator.js';
@@ -17,6 +18,7 @@ const router = Router();
 router.use(protect);
 
 router.get('/', getBills);
+router.get('/export-excel', exportBillsExcel);
 router.post('/', createBillValidator, validateRequest, createBill);
 router.get('/:id', getBillById);
 router.put('/:id/payment-status', updatePaymentStatus);
