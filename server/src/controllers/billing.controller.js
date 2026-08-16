@@ -360,17 +360,17 @@ export const generateInvoicePdfBuffer = (bill, settings) => {
       const accentColor = '#B56A45';
       const gridColor = '#ECE7DF';
 
-      doc.font('Helvetica-Bold').fontSize(16).fillColor(accentColor).text(companyName.toUpperCase(), 40, 45);
+      doc.font('Helvetica-Bold').fontSize(16).fillColor(accentColor).text(`${companyName.toUpperCase()} (ESTIMATE)`, 40, 45);
       doc.font('Helvetica').fontSize(8).fillColor('#676767');
       doc.text(companyLegal, 40, 62);
       doc.text(companyAddress, 40, 72);
       doc.text(`Phone: ${companyPhone} | Email: ${companyEmail}`, 40, 82);
-      doc.font('Helvetica-Bold').text(`GSTIN: ${companyGst}`, 40, 92);
+      // GSTIN removed for estimate format
 
       doc.rect(340, 40, 215, 60).strokeColor(gridColor).stroke();
-      doc.font('Helvetica-Bold').fontSize(10).fillColor(primaryColor).text('TAX INVOICE', 350, 48);
+      doc.font('Helvetica-Bold').fontSize(10).fillColor(primaryColor).text('ESTIMATE', 350, 48);
       doc.fontSize(8).font('Helvetica');
-      doc.text(`Invoice No: ${bill.invoiceNumber}`, 350, 60);
+      doc.text(`Estimate No: ${bill.invoiceNumber}`, 350, 60);
       doc.text(`Date: ${new Date(bill.createdAt).toLocaleDateString('en-IN')}`, 350, 72);
       doc.text(`Place of Supply: ${bill.placeOfSupply}`, 350, 84);
 
@@ -380,7 +380,7 @@ export const generateInvoicePdfBuffer = (bill, settings) => {
       doc.font('Helvetica').fontSize(8).fillColor('#1E1E1B');
       doc.text(bill.customerName, 40, 137);
       doc.text(`Mobile: ${bill.customerPhone}`, 40, 147);
-      if (bill.customerGst) doc.font('Helvetica-Bold').text(`GSTIN: ${bill.customerGst}`, 40, 157).font('Helvetica');
+      // Customer GSTIN removed for estimate format
       doc.text(`Address: ${bill.billingAddress}`, 40, 167, { width: 230 });
 
       doc.font('Helvetica-Bold').fontSize(9).fillColor(primaryColor).text('Delivery Site Address:', 340, 125);
@@ -435,16 +435,9 @@ export const generateInvoicePdfBuffer = (bill, settings) => {
 
       const summaryY = yPos + 10;
       
-      doc.font('Helvetica-Bold').text('Bank Account Information (For Transfers):', 40, summaryY);
-      doc.font('Helvetica');
-      doc.text(`Bank Name: ${bankName}`, 40, summaryY + 12);
-      doc.text(`Account No: ${bankAcc}`, 40, summaryY + 22);
-      doc.text(`IFSC Code: ${bankIfsc}`, 40, summaryY + 32);
-      doc.text(`Branch: ${bankBranch}`, 40, summaryY + 42);
-
       const amountWords = numberToWords(Math.round(parseFloat(bill.grandTotal)));
-      doc.font('Helvetica-Bold').text(`Total In Words:`, 40, summaryY + 60);
-      doc.font('Helvetica').text(`INR ${amountWords}`, 40, summaryY + 70, { width: 250 });
+      doc.font('Helvetica-Bold').text(`Total In Words:`, 40, summaryY);
+      doc.font('Helvetica').text(`INR ${amountWords}`, 40, summaryY + 12, { width: 250 });
 
       const rightColumnX = 380;
       let totalRowsY = summaryY;
@@ -480,7 +473,7 @@ export const generateInvoicePdfBuffer = (bill, settings) => {
       doc.moveTo(40, footerY).lineTo(555, footerY).strokeColor(gridColor).stroke();
       
       doc.fontSize(7).font('Helvetica').fillColor('#676767');
-      doc.text('Declaration: We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.', 40, footerY + 8, { width: 300 });
+      doc.text('Declaration: We declare that this estimate shows the actual price of the goods described and that all particulars are true and correct.', 40, footerY + 8, { width: 300 });
 
       doc.fillColor(primaryColor);
       doc.font('Helvetica-Bold').text(`For ${companyLegal.toUpperCase()}`, 380, footerY + 8, { width: 175, align: 'right' });
@@ -511,7 +504,7 @@ export const getBillPdf = asyncHandler(async (req, res, next) => {
   const pdfBuffer = await generateInvoicePdfBuffer(bill, settings);
 
   res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', `attachment; filename=Invoice_${bill.invoiceNumber}.pdf`);
+  res.setHeader('Content-Disposition', `attachment; filename=Estimate_${bill.invoiceNumber}.pdf`);
   res.send(pdfBuffer);
 });
 

@@ -141,9 +141,9 @@ export const Billing = () => {
     }
   };
 
-  // Handle invoice downloads
+  // Handle estimate downloads
   const handleDownloadPdf = async (billId, invoiceNo) => {
-    adminToast.info(`Generating PDF document for invoice ${invoiceNo}...`);
+    adminToast.info(`Generating PDF document for estimate ${invoiceNo}...`);
     try {
       const token = localStorage.getItem('token');
       const headers = {};
@@ -162,28 +162,28 @@ export const Billing = () => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `Invoice_${invoiceNo}.pdf`);
+      link.setAttribute('download', `Estimate_${invoiceNo}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
-      adminToast.success(`Invoice ${invoiceNo} PDF downloaded successfully`);
+      adminToast.success(`Estimate ${invoiceNo} PDF downloaded successfully`);
     } catch (err) {
       console.error(err);
-      adminToast.error('Failed to download PDF invoice');
+      adminToast.error('Failed to download PDF estimate');
     }
   };
   const handleDeleteBill = async (billId, invoiceNo) => {
-    if (!window.confirm(`Are you sure you want to permanently delete invoice ${invoiceNo}? This cannot be undone.`)) return;
+    if (!window.confirm(`Are you sure you want to permanently delete estimate ${invoiceNo}? This cannot be undone.`)) return;
     
     try {
       const res = await api.delete(`/admin/billing/${billId}`);
       if (res.success) {
-        adminToast.success(`Invoice ${invoiceNo} deleted successfully`);
+        adminToast.success(`Estimate ${invoiceNo} deleted successfully`);
         fetchBills();
       }
     } catch (err) {
-      adminToast.error(err.message || 'Failed to delete invoice');
+      adminToast.error(err.message || 'Failed to delete estimate');
     }
   };
 
@@ -429,12 +429,12 @@ export const Billing = () => {
     try {
       const res = await api.post('/admin/billing', payload);
       if (res.success && res.data) {
-        adminToast.success(`Invoice ${res.data.bill.invoiceNumber} created successfully.`);
+        adminToast.success(`Estimate ${res.data.bill.invoiceNumber} created successfully.`);
         setShowCreateModal(false);
         fetchBills();
       }
     } catch (err) {
-      adminToast.error(err.message || 'Failed to checkout invoice');
+      adminToast.error(err.message || 'Failed to checkout estimate');
     } finally {
       setFormLoading(false);
     }
@@ -446,8 +446,8 @@ export const Billing = () => {
       {/* Page Header */}
       <div className="pb-4 border-b border-[#ECE7DF] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-headings text-2xl font-bold">Billing & Invoicing</h1>
-          <p className="text-xs text-[#676767]">Compile invoices and track customer transactions</p>
+          <h1 className="font-headings text-2xl font-bold">Billing & Estimates</h1>
+          <p className="text-xs text-[#676767]">Compile estimates and track customer transactions</p>
         </div>
         <div className="flex items-center gap-3 self-start sm:self-center">
           {/* Export Excel Dropdown */}
@@ -514,7 +514,7 @@ export const Billing = () => {
             className="flex items-center gap-2 bg-[#B56A45] hover:bg-[#A05C39] text-[#FFFFFF] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors cursor-pointer shadow-xs"
           >
             <FiPlus className="w-4 h-4" />
-            <span>New Invoice</span>
+            <span>New Estimate</span>
           </button>
         </div>
       </div>
@@ -525,7 +525,7 @@ export const Billing = () => {
           <FiSearch className="text-zinc-400 mr-2 flex-shrink-0" />
           <input
             type="text"
-            placeholder="Search by Invoice number, Client name, phone..."
+            placeholder="Search by Estimate number, Client name, phone..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className="bg-transparent border-0 focus:outline-hidden focus:ring-0 w-full"
@@ -600,8 +600,8 @@ export const Billing = () => {
           {statusFilter
             ? `No ${statusFilter.toLowerCase()} bills found.`
             : search
-            ? `No invoices matching "${search}".`
-            : 'No invoices registered. Click "New Invoice" to checkout a sale.'}
+            ? `No estimates matching "${search}".`
+            : 'No estimates registered. Click "New Estimate" to checkout a sale.'}
         </div>
       ) : (
         <div className="bg-[#FFFFFF] border border-[#ECE7DF] rounded-xl overflow-hidden shadow-xs text-sm">
@@ -609,8 +609,8 @@ export const Billing = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[#FCFBF8] border-b border-[#ECE7DF] text-xs font-bold uppercase tracking-wider text-zinc-500">
-                  <th className="px-6 py-4">Invoice No</th>
-                  <th className="px-6 py-4">Invoice Date</th>
+                  <th className="px-6 py-4">Estimate No</th>
+                  <th className="px-6 py-4">Estimate Date</th>
                   <th className="px-6 py-4">Customer Name</th>
                   <th className="px-6 py-4">Type</th>
                   <th className="px-6 py-4">Grand Total</th>
@@ -659,7 +659,7 @@ export const Billing = () => {
                         <button
                           onClick={() => handleDownloadPdf(bill.id, bill.invoiceNumber)}
                           className="flex items-center gap-1.5 bg-[#FFFFFF] hover:bg-[#FCFBF8] border border-[#ECE7DF] px-2.5 py-1.5 rounded-lg text-xs font-bold text-zinc-700 transition-colors cursor-pointer"
-                          title="Download Invoice PDF"
+                          title="Download Estimate PDF"
                         >
                           <FiDownload className="w-3.5 h-3.5" />
                           <span>PDF</span>
@@ -667,7 +667,7 @@ export const Billing = () => {
                         <button
                           onClick={() => handleDeleteBill(bill.id, bill.invoiceNumber)}
                           className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 border border-red-200 px-2.5 py-1.5 rounded-lg text-xs font-bold text-red-700 transition-colors cursor-pointer"
-                          title="Delete Invoice"
+                          title="Delete Estimate"
                         >
                           <FiTrash2 className="w-3.5 h-3.5" />
                         </button>
@@ -711,7 +711,7 @@ export const Billing = () => {
           
           <div className="relative w-full max-w-5xl bg-[#FFFFFF] border border-[#ECE7DF] rounded-xl shadow-2xl overflow-hidden z-50 flex flex-col h-[90vh]">
             <div className="h-14 flex items-center justify-between px-6 border-b border-[#ECE7DF] bg-[#FCFBF8]">
-              <h2 className="font-headings text-sm font-bold uppercase tracking-wider">Generate Sales Invoice</h2>
+              <h2 className="font-headings text-sm font-bold uppercase tracking-wider">Generate Sales Estimate</h2>
               <button onClick={() => !formLoading && setShowCreateModal(false)} className="text-zinc-400 hover:text-zinc-600 p-1">
                 <FiX className="w-5 h-5" />
               </button>
@@ -761,17 +761,7 @@ export const Billing = () => {
                     />
                   </div>
 
-                  {/* Customer GST (Optional) */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Client GSTIN (Optional)</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 27AAAAA0000A1Z5"
-                      value={customerGst}
-                      onChange={(e) => setCustomerGst(e.target.value)}
-                      className="w-full px-3 py-2 bg-[#FCFBF8] border border-[#ECE7DF] rounded-lg text-sm focus:outline-hidden focus:border-[#B56A45]"
-                    />
-                  </div>
+                  {/* Client GSTIN removed for estimate format */}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1042,7 +1032,7 @@ export const Billing = () => {
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Overall Billing Notes / Instructions</label>
                     <textarea
-                      placeholder="Add descriptions or delivery terms to be printed on invoice PDF..."
+                      placeholder="Add descriptions or delivery terms to be printed on estimate PDF..."
                       rows="3"
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
@@ -1106,7 +1096,7 @@ export const Billing = () => {
                         className="w-4 h-4 text-[#B56A45] bg-[#FCFBF8] border-[#ECE7DF] rounded focus:ring-[#B56A45] focus:ring-2"
                       />
                       <label htmlFor="sendEmailCheckbox" className="text-xs text-zinc-600 cursor-pointer font-medium">
-                        Email Invoice to Client
+                        Email Estimate to Client
                       </label>
                     </div>
                     <button
