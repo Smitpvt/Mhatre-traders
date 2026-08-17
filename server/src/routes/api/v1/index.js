@@ -8,6 +8,7 @@ import billingRouter from './billing.routes.js';
 import settingRouter from './setting.routes.js';
 import publicRouter from './public.routes.js';
 import dashboardRouter from './dashboard.routes.js';
+import enquiryRouter from './enquiry.routes.js';
 
 const router = Router();
 
@@ -24,6 +25,7 @@ router.use('/admin/products', productRouter);
 router.use('/admin/inventory', inventoryRouter);
 router.use('/admin/billing', billingRouter);
 router.use('/admin/settings', settingRouter);
+router.use('/admin/enquiries', enquiryRouter);
 
 // Mount public catalog site routes
 router.use('/public', publicRouter);

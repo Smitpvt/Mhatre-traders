@@ -292,3 +292,28 @@ enum SettingType {
   BOOLEAN
   JSON
 }
+
+model Enquiry {
+  id           String   @id @default(uuid())
+  customerName String
+  company      String?
+  email        String?
+  phone        String
+  category     String
+  message      String
+
+  status       EnquiryStatus @default(NEW)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum EnquiryStatus {
+  NEW
+  CONTACTED
+  COMPLETED
+}
+

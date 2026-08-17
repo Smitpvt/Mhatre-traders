@@ -5,71 +5,6 @@ import { FiPhone, FiMail } from "react-icons/fi";
 import { OFFICE_PHONE, OFFICE_EMAIL } from "../../constants/contact";
 import { BASE_URL } from "../../config/api.js";
 
-// Helper to save requests to localStorage (defined outside component for purity/react-compiler)
-const saveEnquiryToLocalStorage = (data) => {
-  try {
-    const saved = localStorage.getItem('mhatre_enquiries');
-    let currentEnquiries = [];
-    if (saved) {
-      currentEnquiries = JSON.parse(saved);
-    } else {
-      // Seed with initial enquiries to keep demo data consistent
-      currentEnquiries = [
-        {
-          id: 'enq-1',
-          customerName: 'Patil Constructions',
-          phone: '+91 98220 12345',
-          category: 'Cement & Aggregates',
-          message: 'Need urgent quote for 450 bags of Ultratech 53-grade cement for Alibag site delivery.',
-          status: 'NEW',
-          createdAt: new Date(Date.now() - 3600000 * 2).toISOString()
-        },
-        {
-          id: 'enq-2',
-          customerName: 'Ramesh Sawant',
-          phone: '+91 99234 56789',
-          category: 'Structural Steel & Rebars',
-          message: 'Looking for 3 Tons of Tata Tiscon 12mm TMT bars. Please confirm rate inclusive of transit.',
-          status: 'CONTACTED',
-          createdAt: new Date(Date.now() - 3600000 * 18).toISOString()
-        },
-        {
-          id: 'enq-3',
-          customerName: 'Karan Mhatre',
-          phone: '+91 94220 98765',
-          category: 'Pipes & Fittings',
-          message: 'Need 120 pieces of Astral 4-inch PVC drainage pipe. Please send best price sheet.',
-          status: 'COMPLETED',
-          createdAt: new Date(Date.now() - 3600000 * 48).toISOString()
-        }
-      ];
-    }
-
-    let displayMessage = data.message;
-    if (data.company) {
-      displayMessage += `\n\n[Company: ${data.company}]`;
-    }
-    if (data.email) {
-      displayMessage += `\n[Email: ${data.email}]`;
-    }
-
-    const newEnquiry = {
-      id: `enq-${Date.now()}`,
-      customerName: data.name,
-      phone: data.phone,
-      category: data.category,
-      message: displayMessage,
-      status: 'NEW',
-      createdAt: new Date().toISOString()
-    };
-
-    currentEnquiries.unshift(newEnquiry);
-    localStorage.setItem('mhatre_enquiries', JSON.stringify(currentEnquiries));
-  } catch (err) {
-    console.error("Failed to save enquiry:", err);
-  }
-};
-
 export default function CTA() {
   const [categoriesList, setCategoriesList] = useState([]);
 
@@ -94,14 +29,35 @@ export default function CTA() {
     loadCategories();
   }, []);
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     console.log("Consultation Request:", data);
-    
-    // Save request to localStorage so it is seen in the admin panel enquiries
-    saveEnquiryToLocalStorage(data);
+    try {
+      const response = await fetch(`${BASE_URL}/public/enquiries`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          name: data.name,
+          company: data.company,
+          email: data.email,
+          phone: data.phone,
+          category: data.category,
+          message: data.message
+        })
+      });
 
-    toast.success("Thank you! Our Alibaug sales office will send a quote soon.");
-    reset();
+      const resData = await response.json();
+      if (!response.ok) {
+        throw new Error(resData.message || "Failed to submit quotation request");
+      }
+
+      toast.success("Thank you! Our Alibaug sales office will send a quote soon.");
+      reset();
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || "Failed to submit quotation request. Please try again.");
+    }
   };
 
   const listToRender = categoriesList.length > 0 ? categoriesList : [

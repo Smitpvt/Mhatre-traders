@@ -25,18 +25,21 @@ export const Dashboard = () => {
   useEffect(() => {
     fetchStats();
 
-    // Read enquiries from local storage to calculate today's count
-    const saved = localStorage.getItem('mhatre_enquiries');
-    if (saved) {
+    const fetchEnquiriesCount = async () => {
       try {
-        const enqs = JSON.parse(saved);
-        const todayStr = new Date().toDateString();
-        const count = enqs.filter(e => new Date(e.createdAt).toDateString() === todayStr).length;
-        setTodayEnquiries(count);
+        const res = await api.get('/admin/enquiries');
+        if (res.success && res.data) {
+          const enqs = res.data.enquiries;
+          const todayStr = new Date().toDateString();
+          const count = enqs.filter(e => new Date(e.createdAt).toDateString() === todayStr).length;
+          setTodayEnquiries(count);
+        }
       } catch (err) {
         console.error(err);
       }
-    }
+    };
+
+    fetchEnquiriesCount();
   }, []);
 
   if (loading) {

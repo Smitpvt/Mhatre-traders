@@ -1,71 +1,65 @@
 import React, { useState, useEffect } from 'react';
 import { FiSearch, FiCheckCircle, FiClock, FiMessageSquare, FiTrash2, FiUser, FiInfo } from 'react-icons/fi';
 import adminToast from '../utils/toast.js';
+import api from '../services/api.js';
 
 export const MaterialEnquiries = () => {
   const [enquiries, setEnquiries] = useState([]);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('ALL'); // 'ALL', 'NEW', 'CONTACTED', 'COMPLETED'
-  
-  // Seed initial mock enquiries to populate list on first load
-  const initialEnquiries = [
-    {
-      id: 'enq-1',
-      customerName: 'Patil Constructions',
-      phone: '+91 98220 12345',
-      category: 'Cement & Aggregates',
-      message: 'Need urgent quote for 450 bags of Ultratech 53-grade cement for Alibag site delivery.',
-      status: 'NEW',
-      createdAt: new Date(Date.now() - 3600000 * 2).toISOString()
-    },
-    {
-      id: 'enq-2',
-      customerName: 'Ramesh Sawant',
-      phone: '+91 99234 56789',
-      category: 'Structural Steel & Rebars',
-      message: 'Looking for 3 Tons of Tata Tiscon 12mm TMT bars. Please confirm rate inclusive of transit.',
-      status: 'CONTACTED',
-      createdAt: new Date(Date.now() - 3600000 * 18).toISOString()
-    },
-    {
-      id: 'enq-3',
-      customerName: 'Karan Mhatre',
-      phone: '+91 94220 98765',
-      category: 'Pipes & Fittings',
-      message: 'Need 120 pieces of Astral 4-inch PVC drainage pipe. Please send best price sheet.',
-      status: 'COMPLETED',
-      createdAt: new Date(Date.now() - 3600000 * 48).toISOString()
-    }
-  ];
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const saved = localStorage.getItem('mhatre_enquiries');
-    if (saved) {
-      setEnquiries(JSON.parse(saved));
-    } else {
-      localStorage.setItem('mhatre_enquiries', JSON.stringify(initialEnquiries));
-      setEnquiries(initialEnquiries);
+  const fetchEnquiries = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/admin/enquiries');
+      if (res.success && res.data) {
+        setEnquiries(res.data.enquiries);
+      }
+    } catch (err) {
+      adminToast.error(err.message || 'Failed to fetch enquiries');
+    } finally {
+      setLoading(false);
     }
-  }, []);
-
-  const updateStatus = (id, newStatus) => {
-    const updated = enquiries.map(e => e.id === id ? { ...e, status: newStatus } : e);
-    setEnquiries(updated);
-    localStorage.setItem('mhatre_enquiries', JSON.stringify(updated));
-    adminToast.success(`Enquiry status updated to ${newStatus}`);
   };
 
-  const deleteEnquiry = (id) => {
-    const updated = enquiries.filter(e => e.id !== id);
-    setEnquiries(updated);
-    localStorage.setItem('mhatre_enquiries', JSON.stringify(updated));
-    adminToast.success('Enquiry log entry removed');
+  useEffect(() => {
+    fetchEnquiries();
+  }, []);
+
+  const updateStatus = async (id, newStatus) => {
+    try {
+      const res = await api.put(`/admin/enquiries/${id}/status`, { status: newStatus });
+      if (res.success) {
+        setEnquiries(prev => prev.map(e => e.id === id ? { ...e, status: newStatus } : e));
+        adminToast.success(`Enquiry status updated to ${newStatus}`);
+      }
+    } catch (err) {
+      adminToast.error(err.message || 'Failed to update status');
+    }
+  };
+
+  const deleteEnquiry = async (id) => {
+    if (!window.confirm('Are you sure you want to remove this enquiry?')) {
+      return;
+    }
+    try {
+      const res = await api.delete(`/admin/enquiries/${id}`);
+      if (res.success) {
+        setEnquiries(prev => prev.filter(e => e.id !== id));
+        adminToast.success('Enquiry log entry removed');
+      }
+    } catch (err) {
+      adminToast.error(err.message || 'Failed to delete enquiry');
+    }
   };
 
   // Filter list
   const filtered = enquiries.filter(e => {
-    const matchesSearch = e.customerName.toLowerCase().includes(search.toLowerCase()) || 
-                          e.message.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = (e.customerName || '').toLowerCase().includes(search.toLowerCase()) || 
+                          (e.message || '').toLowerCase().includes(search.toLowerCase()) ||
+                          (e.company || '').toLowerCase().includes(search.toLowerCase()) ||
+                          (e.email || '').toLowerCase().includes(search.toLowerCase());
     const matchesStatus = filterStatus === 'ALL' || e.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
@@ -122,7 +116,11 @@ export const MaterialEnquiries = () => {
       </div>
 
       {/* Enquiries List Display */}
-      {filtered.length === 0 ? (
+      {loading ? (
+        <div className="bg-[#FFFFFF] border border-[#ECE7DF] rounded-xl p-12 text-center text-zinc-400 text-sm animate-pulse">
+          Loading enquiries list...
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="bg-[#FFFFFF] border border-[#ECE7DF] rounded-xl p-12 text-center text-zinc-400 text-sm">
           No enquiries match your filtering criteria.
         </div>
@@ -143,8 +141,15 @@ export const MaterialEnquiries = () => {
                     <FiUser className="w-4 h-4" />
                   </span>
                   <div>
-                    <h3 className="font-semibold text-zinc-800 text-sm leading-snug">{enq.customerName}</h3>
-                    <p className="text-[10px] text-zinc-400 font-mono">{enq.phone} • {new Date(enq.createdAt).toLocaleString('en-IN')}</p>
+                    <h3 className="font-semibold text-zinc-800 text-sm leading-snug">
+                      {enq.customerName}
+                      {enq.company && <span className="ml-2 text-xs text-zinc-400 font-normal">({enq.company})</span>}
+                    </h3>
+                    <p className="text-[10px] text-zinc-400 font-mono">
+                      {enq.phone}
+                      {enq.email && ` • ${enq.email}`}
+                      {` • ${new Date(enq.createdAt).toLocaleString('en-IN')}`}
+                    </p>
                   </div>
                 </div>
 

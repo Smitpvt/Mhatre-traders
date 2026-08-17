@@ -3,6 +3,9 @@ import prisma from '../../../lib/prisma.js';
 import { ApiResponse } from '../../../utils/apiResponse.js';
 import { ApiError } from '../../../utils/apiError.js';
 import { asyncHandler } from '../../../utils/asyncHandler.js';
+import { createEnquiry } from '../../../controllers/enquiry.controller.js';
+import { createEnquiryValidator } from '../../../validators/enquiry.validator.js';
+import { validateRequest } from '../../../middlewares/validator.js';
 
 const router = Router();
 
@@ -154,5 +157,8 @@ router.get('/products/:slug', asyncHandler(async (req, res, next) => {
     product: { ...rest, inStock }
   }));
 }));
+
+// 5. Submit a customer enquiry/quotation request
+router.post('/enquiries', createEnquiryValidator, validateRequest, createEnquiry);
 
 export default router;
