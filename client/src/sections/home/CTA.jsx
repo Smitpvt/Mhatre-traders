@@ -1,9 +1,74 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { FiPhone, FiMail } from "react-icons/fi";
 import { OFFICE_PHONE, OFFICE_EMAIL } from "../../constants/contact";
 import { BASE_URL } from "../../config/api.js";
+
+// Helper to save requests to localStorage (defined outside component for purity/react-compiler)
+const saveEnquiryToLocalStorage = (data) => {
+  try {
+    const saved = localStorage.getItem('mhatre_enquiries');
+    let currentEnquiries = [];
+    if (saved) {
+      currentEnquiries = JSON.parse(saved);
+    } else {
+      // Seed with initial enquiries to keep demo data consistent
+      currentEnquiries = [
+        {
+          id: 'enq-1',
+          customerName: 'Patil Constructions',
+          phone: '+91 98220 12345',
+          category: 'Cement & Aggregates',
+          message: 'Need urgent quote for 450 bags of Ultratech 53-grade cement for Alibag site delivery.',
+          status: 'NEW',
+          createdAt: new Date(Date.now() - 3600000 * 2).toISOString()
+        },
+        {
+          id: 'enq-2',
+          customerName: 'Ramesh Sawant',
+          phone: '+91 99234 56789',
+          category: 'Structural Steel & Rebars',
+          message: 'Looking for 3 Tons of Tata Tiscon 12mm TMT bars. Please confirm rate inclusive of transit.',
+          status: 'CONTACTED',
+          createdAt: new Date(Date.now() - 3600000 * 18).toISOString()
+        },
+        {
+          id: 'enq-3',
+          customerName: 'Karan Mhatre',
+          phone: '+91 94220 98765',
+          category: 'Pipes & Fittings',
+          message: 'Need 120 pieces of Astral 4-inch PVC drainage pipe. Please send best price sheet.',
+          status: 'COMPLETED',
+          createdAt: new Date(Date.now() - 3600000 * 48).toISOString()
+        }
+      ];
+    }
+
+    let displayMessage = data.message;
+    if (data.company) {
+      displayMessage += `\n\n[Company: ${data.company}]`;
+    }
+    if (data.email) {
+      displayMessage += `\n[Email: ${data.email}]`;
+    }
+
+    const newEnquiry = {
+      id: `enq-${Date.now()}`,
+      customerName: data.name,
+      phone: data.phone,
+      category: data.category,
+      message: displayMessage,
+      status: 'NEW',
+      createdAt: new Date().toISOString()
+    };
+
+    currentEnquiries.unshift(newEnquiry);
+    localStorage.setItem('mhatre_enquiries', JSON.stringify(currentEnquiries));
+  } catch (err) {
+    console.error("Failed to save enquiry:", err);
+  }
+};
 
 export default function CTA() {
   const [categoriesList, setCategoriesList] = useState([]);
@@ -31,6 +96,10 @@ export default function CTA() {
 
   const onSubmit = (data) => {
     console.log("Consultation Request:", data);
+    
+    // Save request to localStorage so it is seen in the admin panel enquiries
+    saveEnquiryToLocalStorage(data);
+
     toast.success("Thank you! Our Alibaug sales office will send a quote soon.");
     reset();
   };
